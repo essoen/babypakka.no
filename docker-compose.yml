@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: babypakka-db
+    environment:
+      POSTGRES_DB: babypakka
+      POSTGRES_USER: babypakka
+      POSTGRES_PASSWORD: babypakka_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U babypakka"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    container_name: babypakka-backend
+    ports:
+      - "8080:8080"
+    environment:
+      DATASOURCE_URL: jdbc:postgresql://postgres:5432/babypakka
+      DATASOURCE_USERNAME: babypakka
+      DATASOURCE_PASSWORD: babypakka_dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: babypakka-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      API_URL: http://backend:8080
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  pgdata:
