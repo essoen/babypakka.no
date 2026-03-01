@@ -2,10 +2,11 @@
 set -euo pipefail
 
 # =============================================================================
-# Deploy Script — Pull latest code and rebuild on EC2
+# Deploy Script — Pull pre-built images from GHCR and restart on EC2
 # Usage: ./deploy.sh [ec2-ip]
 #
 # If no IP is provided, reads it from Terraform output.
+# Requires: docker login to ghcr.io on the EC2 instance (or public packages).
 # =============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -34,8 +35,14 @@ cd /home/ec2-user/app
 echo "Pulling latest code..."
 git pull
 
-echo "Rebuilding and restarting containers..."
-docker compose -f docker-compose.yml -f infrastructure/docker-compose.prod.yml up -d --build
+echo "Pulling latest images..."
+docker compose -f docker-compose.yml -f infrastructure/docker-compose.prod.yml pull backend frontend
+
+echo "Restarting containers..."
+docker compose -f docker-compose.yml -f infrastructure/docker-compose.prod.yml up -d
+
+echo "Cleaning up old images..."
+docker image prune -f
 
 echo "Waiting for services to start..."
 sleep 10
