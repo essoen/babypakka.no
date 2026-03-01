@@ -1,0 +1,99 @@
+micronaut:
+  application:
+    name: babypakka
+
+  server:
+    cors:
+      enabled: true
+      configurations:
+        web:
+          allowed-origins:
+            - http://localhost:3000
+          allowed-origins-regex:
+            - http://localhost:.*
+            - http://frontend:.*
+          allowed-methods:
+            - GET
+            - POST
+            - PUT
+            - DELETE
+            - OPTIONS
+
+  security:
+    authentication: bearer
+    token:
+      jwt:
+        signatures:
+          secret:
+            generator:
+              secret: "${JWT_GENERATOR_SIGNATURE_SECRET:babypakka-dev-secret-change-in-production}"
+    intercept-url-map:
+      - pattern: /api/auth/**
+        access:
+          - isAnonymous()
+      - pattern: /api/admin/**
+        access:
+          - ROLE_ADMIN
+      - pattern: /api/packages/**
+        http-method: GET
+        access:
+          - isAnonymous()
+      - pattern: /api/products/**
+        http-method: GET
+        access:
+          - isAnonymous()
+      - pattern: /api/age-categories/**
+        http-method: GET
+        access:
+          - isAnonymous()
+      - pattern: /swagger/**
+        access:
+          - isAnonymous()
+      - pattern: /swagger-ui/**
+        access:
+          - isAnonymous()
+      - pattern: /health/**
+        access:
+          - isAnonymous()
+
+  router:
+    static-resources:
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: /swagger/**
+      swagger-ui:
+        paths: classpath:META-INF/swagger/views/swagger-ui
+        mapping: /swagger-ui/**
+
+datasources:
+  default:
+    url: "${DATASOURCE_URL:jdbc:postgresql://localhost:5432/babypakka}"
+    username: "${DATASOURCE_USERNAME:babypakka}"
+    password: "${DATASOURCE_PASSWORD:babypakka_dev}"
+    db-type: postgres
+    dialect: POSTGRES
+    driver-class-name: org.postgresql.Driver
+
+jpa:
+  default:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: none
+
+flyway:
+  datasources:
+    default:
+      enabled: true
+
+jackson:
+  serialization:
+    indent-output: true
+    write-dates-as-timestamps: false
+  deserialization:
+    fail-on-unknown-properties: false
+
+endpoints:
+  health:
+    enabled: true
+    sensitive: false
