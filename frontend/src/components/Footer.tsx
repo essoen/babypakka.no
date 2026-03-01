@@ -21,14 +21,12 @@ export default function Footer() {
             >
               Om oss
             </Link>
-            <a
-              href="/babypakka_investor_pitch.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/investor"
               className="text-sm text-baby-text-light hover:text-baby-blue transition-colors"
             >
               Investor
-            </a>
+            </Link>
             <Link
               href="/kontakt"
               className="text-sm text-baby-text-light hover:text-baby-blue transition-colors"
