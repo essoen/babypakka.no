@@ -9,3 +9,16 @@ babypakka.no {
         reverse_proxy frontend:3000
     }
 }
+
+# IP-based access (HTTP only, no SSL)
+:80 {
+    handle /api/* {
+        reverse_proxy backend:8080
+    }
+    handle /health {
+        reverse_proxy backend:8080
+    }
+    handle {
+        reverse_proxy frontend:3000
+    }
+}
