@@ -267,6 +267,20 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Investor */}
+      <section className="pb-12">
+        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+          <a
+            href="/babypakka_investor_pitch.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-baby-text-light/60 underline-offset-4 hover:text-baby-blue hover:underline transition-colors"
+          >
+            Investor?
+          </a>
+        </div>
+      </section>
     </>
   );
 }
