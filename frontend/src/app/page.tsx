@@ -1,5 +1,17 @@
 import Link from 'next/link';
 
+export const metadata = {
+  title: 'Babypakka.no — Lei babyutstyr tilpasset barnets alder',
+  description: 'Abonnementstjeneste for babyutstyr. Foreldre registrerer barnets fodselsdato og far tilgang til alderstilpassede utstyrspakker.',
+  openGraph: {
+    title: 'Babypakka.no — Lei babyutstyr tilpasset barnets alder',
+    description: 'Abonnementstjeneste for babyutstyr. Lei det du trenger, returner nar barnet vokser ut av det.',
+    type: 'website',
+    locale: 'nb_NO',
+    url: 'https://babypakka.no',
+  },
+};
+
 const steps = [
   {
     number: '1',

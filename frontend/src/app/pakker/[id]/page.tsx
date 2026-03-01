@@ -1,9 +1,29 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getPackage } from '@/lib/api';
 import ProductCard from '@/components/ProductCard';
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const pkg = await getPackage(Number(id));
+    return {
+      title: `${pkg.name} | Babypakka.no`,
+      description: pkg.description || `Detaljer om ${pkg.name} — babyutstyrspakke fra Babypakka.no`,
+      openGraph: {
+        title: `${pkg.name} | Babypakka.no`,
+        description: pkg.description || `Detaljer om ${pkg.name}`,
+        type: 'website',
+        locale: 'nb_NO',
+      },
+    };
+  } catch {
+    return { title: 'Pakke | Babypakka.no' };
+  }
 }
 
 export default async function PackageDetailPage({ params }: PageProps) {

@@ -3,8 +3,14 @@ import { Package } from '@/types';
 import PackageCard from '@/components/PackageCard';
 
 export const metadata = {
-  title: 'Pakker — Babypakka',
-  description: 'Se våre basispakker og tilleggspakker for babyutstyr. Tilpasset barnets alder.',
+  title: 'Pakker | Babypakka.no',
+  description: 'Se alle utstyrspakker for baby — fra nyfodt til smabarn. Basispakker og tilleggspakker.',
+  openGraph: {
+    title: 'Utstyrspakker | Babypakka.no',
+    description: 'Se alle utstyrspakker for baby — fra nyfodt til smabarn.',
+    type: 'website',
+    locale: 'nb_NO',
+  },
 };
 
 export default async function PakkerPage() {

@@ -4,8 +4,14 @@ import ProductCard from '@/components/ProductCard';
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Produkter — Babypakka',
-  description: 'Se alle tilgjengelige babyprodukter i vårt utvalg. Kvalitetsutstyr for alle aldre.',
+  title: 'Produkter | Babypakka.no',
+  description: 'Utforsk alle babyproduktene vare — babynest, baeresele, hoystol, sparkesykkel og mer.',
+  openGraph: {
+    title: 'Produktkatalog | Babypakka.no',
+    description: 'Utforsk alle babyproduktene vare.',
+    type: 'website',
+    locale: 'nb_NO',
+  },
 };
 
 interface PageProps {

@@ -11,9 +11,17 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: 'Babypakka — Leie av babyutstyr tilpasset barnets alder',
-  description:
-    'Lei kvalitetsutstyr tilpasset barnets alder. Bytteferdig når barnet vokser. Enkelt, bærekraftig og rimelig.',
+  title: {
+    default: 'Babypakka.no — Lei babyutstyr tilpasset barnets alder',
+    template: '%s | Babypakka.no',
+  },
+  description: 'Abonnementstjeneste for babyutstyr. Lei alderstilpassede utstyrspakker for baby og smabarn.',
+  metadataBase: new URL('https://babypakka.no'),
+  openGraph: {
+    type: 'website',
+    locale: 'nb_NO',
+    siteName: 'Babypakka.no',
+  },
 };
 
 export default function RootLayout({
