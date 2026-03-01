@@ -1,10 +1,10 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Babypakka.no — Lei babyutstyr tilpasset barnets alder',
+    title: 'Babypakka.no – Lei babyutstyr tilpasset barnets alder',
   description: 'Abonnementstjeneste for babyutstyr. Foreldre registrerer barnets fodselsdato og far tilgang til alderstilpassede utstyrspakker.',
   openGraph: {
-    title: 'Babypakka.no — Lei babyutstyr tilpasset barnets alder',
+  title: 'Babypakka.no – Lei babyutstyr tilpasset barnets alder',
     description: 'Abonnementstjeneste for babyutstyr. Lei det du trenger, returner nar barnet vokser ut av det.',
     type: 'website',
     locale: 'nb_NO',
@@ -49,14 +49,14 @@ const agePhases = [
   {
     label: 'Nyfødt',
     range: '0–3 mnd',
-    description: 'Alt du trenger de første månedene — fra stellebord til babybadestamp.',
+    description: 'Alt du trenger de første månedene, fra stellebord til babybadestamp.',
     color: 'bg-baby-blue-light',
     textColor: 'text-baby-blue-dark',
   },
   {
     label: 'Spedbarn',
     range: '3–6 mnd',
-    description: 'Utstyr for de nysgjerrige dagene — babysitter, leker og mer.',
+    description: 'Utstyr for de nysgjerrige dagene. Babysitter, leker og mer.',
     color: 'bg-baby-pink-light',
     textColor: 'text-baby-pink',
   },
@@ -80,19 +80,19 @@ const addonPackages = [
   {
     name: 'Søvnpakken',
     challenge: 'Søvnutfordringer',
-    description: 'Hjelpemidler for bedre søvn — fra blackout-gardiner til white noise-maskin.',
+    description: 'Hjelpemidler for bedre søvn, fra blackout-gardiner til white noise-maskin.',
     price: 149,
   },
   {
     name: 'Reisepakken',
     challenge: 'Reise med baby',
-    description: 'Kompakt reiseutstyr som gjør turen enklere — reiseseng, bæresele og mer.',
+    description: 'Kompakt reiseutstyr som gjør turen enklere. Reiseseng, bæresele og mer.',
     price: 199,
   },
   {
     name: 'Ammepakken',
     challenge: 'Amming',
-    description: 'Støtte for ammeperioden — ammepute, brystpumpe og oppbevaringsutstyr.',
+    description: 'Støtte for ammeperioden. Ammepute, brystpumpe og oppbevaringsutstyr.',
     price: 149,
   },
   {

@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const pkg = await getPackage(Number(id));
     return {
       title: `${pkg.name} | Babypakka.no`,
-      description: pkg.description || `Detaljer om ${pkg.name} — babyutstyrspakke fra Babypakka.no`,
+      description: pkg.description || `Detaljer om ${pkg.name}, babyutstyrspakke fra Babypakka.no`,
       openGraph: {
         title: `${pkg.name} | Babypakka.no`,
         description: pkg.description || `Detaljer om ${pkg.name}`,

@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export const metadata = {
   title: 'Produkter | Babypakka.no',
-  description: 'Utforsk alle babyproduktene vare — babynest, baeresele, hoystol, sparkesykkel og mer.',
+  description: 'Utforsk alle babyproduktene våre. Babynest, bæresele, høystol, sparkesykkel og mer.',
   openGraph: {
     title: 'Produktkatalog | Babypakka.no',
     description: 'Utforsk alle babyproduktene vare.',

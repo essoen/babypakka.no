@@ -1,9 +1,9 @@
 export const metadata = {
   title: 'Kontakt oss | Babypakka.no',
-  description: 'Ta kontakt med Babypakka — vi hjelper deg gjerne med spørsmål om abonnement, utstyr og levering.',
+  description: 'Ta kontakt med Babypakka. Vi hjelper deg gjerne med spørsmål om abonnement, utstyr og levering.',
   openGraph: {
     title: 'Kontakt oss | Babypakka.no',
-    description: 'Ta kontakt med Babypakka — vi hjelper deg gjerne!',
+    description: 'Ta kontakt med Babypakka. Vi hjelper deg gjerne!',
     type: 'website',
     locale: 'nb_NO',
   },

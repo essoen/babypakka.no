@@ -12,7 +12,7 @@ const geistSans = Geist({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Babypakka.no — Lei babyutstyr tilpasset barnets alder',
+    default: 'Babypakka.no – Lei babyutstyr tilpasset barnets alder',
     template: '%s | Babypakka.no',
   },
   description: 'Abonnementstjeneste for babyutstyr. Lei alderstilpassede utstyrspakker for baby og smabarn.',

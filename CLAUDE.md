@@ -10,6 +10,7 @@ Build **Babypakka.no** — a Norwegian baby equipment subscription service MVP. 
 - **Infrastructure doc**: `infrastructure.md` contains AWS hosting plan with 3 options (Option 0 EC2 MVP, Option A Fargate, Option B production)
 - **Backend must follow conventions from** `https://github.com/nsbno/trafficinfo-baseline-micronaut` — specifically: `object Application` with `Micronaut.build().start()`, `domain/` package (entities + repos + DTOs co-located), `controllers/` and `services/` plural, `system/` package, `kotlin-logging`, `micronaut-problem-json`, `application.yml` (not .properties), startup config logger, health indicator
 - **All UI text must be in Norwegian** (lang="nb")
+- **Avoid em dashes (—) in Norwegian text**. They look AI-generated. Rewrite sentences to avoid them. If a dash is truly needed, use the Norwegian en dash (–) with spaces on both sides, per Norwegian typographic convention.
 - **Mobile-first responsive design** with a warm baby-friendly color palette (baby-blue, baby-pink, baby-cream, baby-sage, baby-warm)
 - **Consumer-facing features take priority over admin panel**
 - **Auth approach**: JWT bearer tokens with bcrypt password hashing. Micronaut Security's `HttpRequestAuthenticationProvider` validates credentials against the DB. Mock auth for now — supports future Google login.

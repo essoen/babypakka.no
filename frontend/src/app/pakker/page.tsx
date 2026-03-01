@@ -4,10 +4,10 @@ import PackageCard from '@/components/PackageCard';
 
 export const metadata = {
   title: 'Pakker | Babypakka.no',
-  description: 'Se alle utstyrspakker for baby — fra nyfodt til smabarn. Basispakker og tilleggspakker.',
+  description: 'Se alle utstyrspakker for baby, fra nyfødt til småbarn. Basispakker og tilleggspakker.',
   openGraph: {
     title: 'Utstyrspakker | Babypakka.no',
-    description: 'Se alle utstyrspakker for baby — fra nyfodt til smabarn.',
+    description: 'Se alle utstyrspakker for baby, fra nyfødt til småbarn.',
     type: 'website',
     locale: 'nb_NO',
   },
@@ -65,7 +65,7 @@ export default async function PakkerPage() {
       <section className="mt-16">
         <h2 className="text-3xl font-bold text-baby-text sm:text-4xl">Tilleggspakker</h2>
         <p className="mt-2 text-baby-text-light">
-          Legg til ekstra pakker for spesifikke behov — søvn, reise, amming og aktivitet.
+          Legg til ekstra pakker for spesifikke behov som søvn, reise, amming og aktivitet.
         </p>
         {addonPackages.length > 0 ? (
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">

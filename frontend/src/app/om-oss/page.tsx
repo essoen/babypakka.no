@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export const metadata = {
   title: 'Om oss | Babypakka.no',
-  description: 'Lær mer om Babypakka — vi gjør kvalitetsutstyr for baby tilgjengelig gjennom abonnement. Bærekraftig, rimelig og enkelt.',
+  description: 'Lær mer om Babypakka. Vi gjør kvalitetsutstyr for baby tilgjengelig gjennom abonnement. Bærekraftig, rimelig og enkelt.',
   openGraph: {
     title: 'Om oss | Babypakka.no',
     description: 'Vi gjør kvalitetsutstyr for baby tilgjengelig gjennom abonnement.',
@@ -18,7 +18,7 @@ export default function OmOssPage() {
       <section className="text-center">
         <h1 className="text-3xl font-bold text-baby-text sm:text-4xl">Om Babypakka</h1>
         <p className="mt-4 text-lg text-baby-text-light">
-          Vi gjør kvalitetsutstyr for baby tilgjengelig for alle — gjennom et enkelt og fleksibelt abonnement.
+          Vi gjør kvalitetsutstyr for baby tilgjengelig for alle, gjennom et enkelt og fleksibelt abonnement.
         </p>
       </section>
 
@@ -28,7 +28,7 @@ export default function OmOssPage() {
         <p className="mt-4 text-baby-text-light leading-relaxed">
           Babypakka ble startet med én enkel idé: foreldre trenger ikke å eie alt babyutstyr selv.
           Hos oss registrerer du barnets fødselsdato, og får tilgang til alderstilpassede utstyrspakker
-          som du leier månedlig. Når barnet vokser, bytter vi utstyret — slik at du alltid har det
+          som du leier månedlig. Når barnet vokser, bytter vi utstyret slik at du alltid har det
           som passer.
         </p>
       </section>
@@ -69,7 +69,7 @@ export default function OmOssPage() {
             </div>
             <h3 className="mt-4 text-lg font-semibold text-baby-text">Bekvemmelighet</h3>
             <p className="mt-2 text-sm text-baby-text-light">
-              Vi håndterer logistikken. Du får utstyret levert hjem — og vi henter det når du er ferdig.
+              Vi håndterer logistikken. Du får utstyret levert hjem, og vi henter det når du er ferdig.
             </p>
           </div>
         </div>

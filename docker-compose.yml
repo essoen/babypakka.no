@@ -41,7 +41,7 @@ services:
       context: ./frontend
     container_name: babypakka-frontend
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT:-3000}:3000"
     environment:
       API_URL: http://backend:8080
     depends_on:
