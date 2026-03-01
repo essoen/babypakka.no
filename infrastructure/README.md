@@ -99,10 +99,62 @@ This SSHs into the EC2 instance, pulls latest code, and rebuilds containers.
 
 ```bash
 # Via SSH
-ssh ec2-user@<elastic-ip>
+ssh -i ~/.ssh/babypakka-key.pem ec2-user@13.63.113.28
 
 # Via SSM Session Manager (no SSH key needed)
 aws ssm start-session --target <instance-id> --region eu-north-1
+```
+
+## DNS management
+
+DNS is managed via DigitalOcean (ns1/ns2/ns3.digitalocean.com), not AWS Route 53.
+
+```bash
+# List all records
+doctl compute domain records list babypakka.no
+
+# Add a record
+doctl compute domain records create babypakka.no \
+  --record-type TXT --record-name @ \
+  --record-data "some-value" --record-ttl 300
+```
+
+Current records:
+- `A @ -> 13.63.113.28` (EC2 Elastic IP)
+- `CNAME www -> @`
+- `TXT @ -> protonmail-verification=...` (ProtonMail email verification)
+
+## Troubleshooting
+
+### Caddy SSL certificate failure
+
+If Caddy fails to obtain a Let's Encrypt certificate (e.g. DNS wasn't ready when Caddy first booted), it gets stuck retrying with failed ACME orders. Fix by clearing the ACME data and restarting:
+
+```bash
+ssh -i ~/.ssh/babypakka-key.pem ec2-user@13.63.113.28
+cd /home/ec2-user/app
+
+# Stop and remove Caddy
+docker compose -f docker-compose.yml -f infrastructure/docker-compose.prod.yml stop caddy
+docker compose -f docker-compose.yml -f infrastructure/docker-compose.prod.yml rm -f caddy
+
+# Clear stale ACME data
+docker volume rm app_caddy_data app_caddy_config
+
+# Restart Caddy (will register fresh ACME account and obtain new certificate)
+docker compose -f docker-compose.yml -f infrastructure/docker-compose.prod.yml up -d caddy
+
+# Verify (wait ~20s for ACME challenge)
+docker logs babypakka-caddy --tail 20
+```
+
+### Checking container status
+
+```bash
+ssh -i ~/.ssh/babypakka-key.pem ec2-user@13.63.113.28
+cd /home/ec2-user/app
+docker compose -f docker-compose.yml -f infrastructure/docker-compose.prod.yml ps
+docker compose -f docker-compose.yml -f infrastructure/docker-compose.prod.yml logs --tail 20 <service>
 ```
 
 ## File structure

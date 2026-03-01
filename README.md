@@ -11,7 +11,8 @@ Abonnementstjeneste for babyutstyr. Foreldre registrerer barnets fodselsdato og 
 | Database | PostgreSQL 16 |
 | Migrasjoner | Flyway (11 migrasjoner + seed-data) |
 | Auth | JWT (Micronaut Security) + bcrypt passord-hashing |
-| Infrastruktur | Docker Compose (lokal), AWS (planlagt, se `infrastructure.md`) |
+| Infrastruktur | Docker Compose + AWS EC2 + Caddy (auto SSL) |
+| CI/CD | GitHub Actions + GHCR + SSH-deploy |
 
 ## Hurtigstart med Docker Compose
 
@@ -23,6 +24,9 @@ cd backend && ./gradlew shadowJar && cd ..
 
 # 2. Start alt
 docker compose up --build
+
+# Hvis port 3000 er opptatt (f.eks. av Obsidian):
+FRONTEND_PORT=3001 docker compose up --build
 ```
 
 Tjenestene starter i rekkefolge (postgres -> backend -> frontend):
@@ -221,13 +225,22 @@ Databasen populeres automatisk med:
 
 GitHub Actions kjorer automatisk ved push og pull request:
 
-- **Backend**: Bygg + test med Gradle (PostgreSQL service container)
-- **Frontend**: Lint + bygg med npm
-- **Integration** (kun main): Docker Compose opp, verifiser helse + API + frontend
+- **CI** (`ci.yml`): Backend bygg + test, frontend lint + bygg, integrasjonstest med Docker Compose
+- **CD** (`docker-publish.yml`, kun main): Bygger multi-arch Docker images (amd64+arm64), pusher til GHCR, deployer til EC2 via SSH. ~5-6 min fra push til live.
+
+## Hosting
+
+Kjorer pa en enkelt EC2-instans (t4g.small) i eu-north-1 med Docker Compose og Caddy for automatisk SSL.
+Se `infrastructure/README.md` for operasjonell dokumentasjon.
+
+- **URL**: https://babypakka.no
+- **Elastic IP**: 13.63.113.28
+- **DNS**: DigitalOcean (ns1/ns2/ns3.digitalocean.com)
+- **SSL**: Caddy + Let's Encrypt (automatisk)
+- **Kostnad**: ~$14/mnd
 
 ## Neste steg
 
-- Infrastruktur med Terraform (se `infrastructure.md`)
 - Sprint 4: Polish (responsiv design, loading-skjeletter, feilhandtering, SEO)
 - Google OAuth-innlogging
 - Automatisk fasebytte-deteksjon

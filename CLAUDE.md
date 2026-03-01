@@ -1,8 +1,8 @@
-# Babypakka.no — Project Memory
+# Babypakka.no – Project Memory
 
 ## Goal
 
-Build **Babypakka.no** — a Norwegian baby equipment subscription service MVP. Parents register their child's birth date and get access to age-appropriate equipment packages they rent monthly. The app has a customer portal, admin panel, order management, and full-stack architecture with Kotlin/Micronaut backend + Next.js frontend + PostgreSQL.
+Build **Babypakka.no** – a Norwegian baby equipment subscription service MVP. Parents register their child's birth date and get access to age-appropriate equipment packages they rent monthly. The app has a customer portal, admin panel, order management, and full-stack architecture with Kotlin/Micronaut backend + Next.js frontend + PostgreSQL.
 
 ## Instructions
 
@@ -13,11 +13,11 @@ Build **Babypakka.no** — a Norwegian baby equipment subscription service MVP. 
 - **Avoid em dashes (—) in Norwegian text**. They look AI-generated. Rewrite sentences to avoid them. If a dash is truly needed, use the Norwegian en dash (–) with spaces on both sides, per Norwegian typographic convention.
 - **Mobile-first responsive design** with a warm baby-friendly color palette (baby-blue, baby-pink, baby-cream, baby-sage, baby-warm)
 - **Consumer-facing features take priority over admin panel**
-- **Auth approach**: JWT bearer tokens with bcrypt password hashing. Micronaut Security's `HttpRequestAuthenticationProvider` validates credentials against the DB. Mock auth for now — supports future Google login.
-- **Docker Compose must spin up everything** — the backend Dockerfile uses a pre-built JAR (run `./gradlew shadowJar` first) because Colima's VM has slow network for Gradle downloads. A `Dockerfile.ci` exists for full multi-stage builds in GitHub Actions.
+- **Auth approach**: JWT bearer tokens with bcrypt password hashing. Micronaut Security's `HttpRequestAuthenticationProvider` validates credentials against the DB. Mock auth for now, supports future Google login.
+- **Docker Compose must spin up everything**. The backend Dockerfile uses a pre-built JAR (run `./gradlew shadowJar` first) because Colima's VM has slow network for Gradle downloads. A `Dockerfile.ci` exists for full multi-stage builds in GitHub Actions.
 - **Orchestrate subagents for parallel work** where possible
 - **Fasebytte (phase change)**: No automatic backend logic. Frontend shows a suggestion banner on the dashboard when a child's current age category doesn't match their active base subscription's package name. User chooses to switch manually.
-- **Orders**: Simple order queue — orders auto-created when subscriptions are created. Admin changes status (PENDING -> PACKING -> SHIPPED -> DELIVERED). No swap/return orders in MVP.
+- **Orders**: Simple order queue. Orders auto-created when subscriptions are created. Admin changes status (PENDING -> PACKING -> SHIPPED -> DELIVERED). No swap/return orders in MVP.
 - **Address**: Optional in profile, but required when creating a subscription (validated in backend). Can be set in dashboard or during onboarding confirmation step.
 
 ## Hosting Decisions
@@ -48,10 +48,18 @@ Build **Babypakka.no** — a Norwegian baby equipment subscription service MVP. 
 - **Micronaut Data JPA**: `findAllById()` is not available. Use individual `findById()` calls with `mapNotNull` instead.
 - **Micronaut Security role mapping**: In `application.yml` intercept-url-map, use `ROLE_ADMIN`. In `@Secured` annotation, use just `"ADMIN"`.
 - **Micronaut serde omits null fields**: Address fields missing from JSON when null. Frontend handles with falsy checks (both null and undefined are falsy).
+- **DNS is managed via DigitalOcean** (ns1/ns2/ns3.digitalocean.com). The `doctl` CLI is installed and authenticated locally. Use `doctl compute domain records list babypakka.no` to view records, `doctl compute domain records create` to add.
+- **E-post via ProtonMail**: `hei@babypakka.no` is the only contact email used across the site. ProtonMail DNS verification TXT record is set in DigitalOcean DNS.
+- **EC2 SSH key**: `~/.ssh/babypakka-key.pem`. Connect with `ssh -i ~/.ssh/babypakka-key.pem ec2-user@13.63.113.28`.
+- **EC2 Elastic IP**: `13.63.113.28`.
+- **Port 3000 conflict locally**: Obsidian occupies port 3000. Use `FRONTEND_PORT=3001 docker compose up` to run locally on an alternative port. The `docker-compose.yml` supports this via `${FRONTEND_PORT:-3000}`.
+- **Caddy ACME troubleshooting**: If Caddy fails to get a certificate (e.g. DNS wasn't ready at first boot), clear the volumes and restart: stop caddy, `docker volume rm app_caddy_data app_caddy_config`, then start caddy again. It will register a fresh ACME account and obtain a new certificate.
+- **CD pipeline**: Push to `main` triggers GitHub Actions (`docker-publish.yml`): builds multi-arch Docker images (amd64+arm64), pushes to GHCR, then SSHs into EC2 to pull and restart. Total time ~5-6 min from push to live.
+- **Investor page framing**: babypakka.no is presented as a concept/idea from Stein-Otto Svorstøl, not an active service. The `/investor` page explains this and links to the pitch PDF. The site itself serves as a working prototype/demo.
 
 ## Accomplished
 
-### Sprints 1-3 + 5 — Complete
+### Sprints 1-3 + 5 – Complete
 - Full database schema: 11 Flyway migrations + seed data
 - Backend: 12 controllers, 8 services, 9 entities, 8 repositories, 20+ DTOs
 - Frontend: 16 pages, 4 components, auth context, API client
@@ -59,9 +67,15 @@ Build **Babypakka.no** — a Norwegian baby equipment subscription service MVP. 
 - GitHub Actions CI
 - See `design.md` for detailed breakdown per sprint
 
+### Sprint 6 – Complete
+- AWS EC2 infrastructure deployed via Terraform (Option 0: EC2 MVP)
+- Caddy reverse proxy with auto Let's Encrypt SSL
+- CD pipeline via GitHub Actions (push to main -> build -> deploy to EC2)
+- DNS via DigitalOcean, ProtonMail email verification
+- Investor page with concept framing and pitch PDF
+
 ### Not started
 - Sprint 4: Polish (responsive pass, loading skeletons, error boundaries, SEO meta tags)
-- Sprint 6: AWS infrastructure with Terraform (Option 0: EC2 MVP)
 - Future: Google OAuth login, automatic phase-change detection
 
 ## Test credentials
