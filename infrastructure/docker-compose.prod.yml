@@ -1,0 +1,49 @@
+## Production overrides — layer on top of the root docker-compose.yml
+## Usage: docker compose -f docker-compose.yml -f infrastructure/docker-compose.prod.yml up -d
+##
+## Adds Caddy reverse proxy for automatic SSL via Let's Encrypt.
+## Note: Backend/frontend/postgres ports from the base file still bind to
+## localhost on the EC2 host, but the security group only exposes 80/443/22
+## so they are not reachable from the internet.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: babypakka-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infrastructure/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      frontend:
+        condition: service_started
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - default
+
+  frontend:
+    environment:
+      API_URL: http://backend:8080
+    restart: unless-stopped
+
+  backend:
+    environment:
+      DATASOURCE_URL: jdbc:postgresql://postgres:5432/babypakka
+      DATASOURCE_USERNAME: babypakka
+      DATASOURCE_PASSWORD: "${DB_PASSWORD:-babypakka_dev}"
+      JWT_GENERATOR_SIGNATURE_SECRET: "${JWT_SECRET:-default-dev-secret-change-in-production}"
+    restart: unless-stopped
+
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: "${DB_PASSWORD:-babypakka_dev}"
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
