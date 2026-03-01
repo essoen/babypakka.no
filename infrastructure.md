@@ -1,17 +1,18 @@
 # Babypakka.no — AWS Infrastructure Plan
 
 > **Status**: Plan ferdig. Terraform-implementering er neste steg (Sprint 6).
-> Start med Option A (MVP, ~$60-95/mo). Se [Terraform Module Structure](#terraform-module-structure) for filstruktur.
+> Start med **Option 0** (EC2 MVP, ~$14/mo). Option A og B er vekstbanen.
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Key Design Decisions](#key-design-decisions)
-- [Option A: Simple & Cheap (MVP)](#option-a-simple--cheap-mvp)
+- [Option 0: Ultra-Cheap MVP (EC2)](#option-0-ultra-cheap-mvp-ec2)
+- [Option A: ECS Fargate (Growth)](#option-a-ecs-fargate-growth)
 - [Option B: Production-Ready (Scaling)](#option-b-production-ready-scaling)
 - [Cross-Cutting Concerns](#cross-cutting-concerns)
 - [Terraform Module Structure](#terraform-module-structure)
-- [Migration Path: A to B](#migration-path-a-to-b)
+- [Migration Path: 0 to A to B](#migration-path-0-to-a-to-b)
 - [Appendix: Decision Log](#appendix-decision-log)
 
 ---
@@ -30,10 +31,11 @@ Both Docker images are already production-optimized (multi-stage builds, non-roo
 
 ### Guiding Principles
 
-1. **Align with team conventions** — SSM Parameter Store for config, ECR for images, similar patterns to trafficinfo-baseline-micronaut
-2. **Budget-conscious** — MVP should cost under $100/mo
-3. **Clear growth path** — Option A should be evolvable to Option B without a full rewrite
+1. **As cheap as possible for MVP** — target ~$14/mo, traffic will be low
+2. **Same setup locally and in prod** — Docker Compose on EC2, identical to local dev
+3. **Clear growth path** — Option 0 → A → B without full rewrites
 4. **Norwegian data residency** — Use `eu-north-1` (Stockholm) as the primary region
+5. **User manages domain** — Norwegian .no domain at their registrar (e.g., Domeneshop), points A record at Elastic IP
 
 ---
 
@@ -84,7 +86,197 @@ The ECS task definition references these via `secrets` (for SecureString) and `e
 
 ---
 
-## Option A: Simple & Cheap (MVP)
+## Option 0: Ultra-Cheap MVP (EC2)
+
+**This is the recommended starting point.** Single EC2 instance running the exact same Docker Compose stack as local development. No ECS, no RDS, no ALB, no CloudFront.
+
+### Architecture Diagram
+
+```
+                    User's domain registrar (e.g., Domeneshop)
+                    babypakka.no  A record → Elastic IP
+                                    │
+                           ┌────────▼────────┐
+                           │  EC2 t4g.small   │
+                           │  (2 vCPU, 2GB)   │
+                           │  eu-north-1      │
+                           │                  │
+                           │  ┌────────────┐  │
+                           │  │   Caddy     │  │  :443/:80 → auto Let's Encrypt SSL
+                           │  │   reverse   │  │
+                           │  │   proxy     │  │
+                           │  └──────┬─────┘  │
+                           │         │         │
+                           │    ┌────┴────┐    │
+                           │    │         │    │
+                           │  ┌─▼──┐  ┌──▼─┐  │
+                           │  │FE  │  │BE  │  │
+                           │  │:3000│  │:8080│  │
+                           │  └────┘  └──┬─┘  │
+                           │             │     │
+                           │          ┌──▼──┐  │
+                           │          │ PG  │  │
+                           │          │:5432│  │
+                           │          └─────┘  │
+                           │                   │
+                           │  EBS gp3 20GB     │
+                           └───────────────────┘
+
+                    ┌──────────────┐
+                    │  S3 bucket   │  (Terraform state only)
+                    └──────────────┘
+```
+
+### AWS Services
+
+| Service | Configuration | Purpose | Est. Monthly Cost |
+|---------|-------------|---------|-------------------|
+| **EC2** | t4g.small (2 vCPU, 2GB), Amazon Linux 2023 | Run Docker Compose | ~$12 |
+| **EBS** | 20GB gp3 | Root volume + Docker data + PostgreSQL data | ~$2 |
+| **Elastic IP** | 1 | Static IP for domain A record | Free (when attached) |
+| **VPC** | 1 VPC, 1 public subnet, IGW | Networking | Free |
+| **Security Group** | 1 | Allow 80, 443, 22 (SSH) | Free |
+| **S3** | 1 bucket | Terraform state | ~$0.02 |
+| | | **Total** | **~$14/mo** |
+
+### Caddy Configuration
+
+Caddy runs as a Docker container alongside the app, handling SSL automatically via Let's Encrypt:
+
+```
+# Caddyfile
+babypakka.no {
+    handle /api/* {
+        reverse_proxy backend:8080
+    }
+    handle /health {
+        reverse_proxy backend:8080
+    }
+    handle {
+        reverse_proxy frontend:3000
+    }
+}
+```
+
+### Docker Compose (Production)
+
+Extends the local `docker-compose.yml` with Caddy:
+
+```yaml
+# docker-compose.prod.yml (extends docker-compose.yml)
+services:
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      frontend:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend:
+    environment:
+      - API_URL=http://backend:8080
+    ports: []  # Remove public port, Caddy handles routing
+
+  backend:
+    environment:
+      - DATASOURCE_URL=jdbc:postgresql://postgres:5432/babypakka
+      - JWT_GENERATOR_SIGNATURE_SECRET=${JWT_SECRET}
+    ports: []  # Remove public port, Caddy handles routing
+
+  postgres:
+    ports: []  # No public access
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  caddy_data:
+  caddy_config:
+  pgdata:
+```
+
+### Backup Strategy
+
+- **EBS Snapshots**: Daily automated snapshots via AWS Data Lifecycle Manager (~$1/mo for 7-day retention)
+- PostgreSQL data lives on EBS volume, so snapshots capture everything
+- For extra safety: optional `pg_dump` cron to S3 (~$0.02/mo)
+
+### EC2 User Data (Bootstrap)
+
+The EC2 instance bootstraps itself on first launch:
+
+```bash
+#!/bin/bash
+# Install Docker + Docker Compose
+yum update -y
+yum install -y docker git
+systemctl enable docker && systemctl start docker
+usermod -aG docker ec2-user
+
+# Install Docker Compose plugin
+mkdir -p /usr/local/lib/docker/cli-plugins
+curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-aarch64 \
+  -o /usr/local/lib/docker/cli-plugins/docker-compose
+chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+# Clone repo and start
+cd /home/ec2-user
+git clone https://github.com/<user>/babypakka.no.git app
+cd app
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+```
+
+### Deployment Script
+
+```bash
+#!/bin/bash
+# deploy.sh — run from local machine
+EC2_IP="${1:-<elastic-ip>}"
+ssh ec2-user@$EC2_IP "cd app && git pull && docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build"
+```
+
+### Terraform Structure (Option 0)
+
+```
+infrastructure/
+├── environments/prod/
+│   ├── main.tf              # Module calls
+│   ├── variables.tf
+│   ├── terraform.tfvars     # Instance type, key pair name, domain
+│   ├── outputs.tf           # EC2 public IP, SSH command
+│   └── backend.tf           # S3 backend for state
+│
+├── modules/
+│   ├── networking/
+│   │   ├── main.tf          # VPC, public subnet, IGW, route table, SG
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   │
+│   └── compute/
+│       ├── main.tf          # EC2 instance, Elastic IP, EBS, user_data
+│       ├── iam.tf           # Instance profile (for SSM Session Manager access)
+│       ├── variables.tf
+│       └── outputs.tf
+│
+├── scripts/
+│   ├── init-state-bucket.sh # Create S3 + DynamoDB for TF state
+│   ├── deploy.sh            # SSH + docker compose up
+│   └── user-data.sh         # EC2 bootstrap (Docker, Compose, clone repo)
+│
+└── README.md
+```
+
+### Estimated Monthly Cost: **~$14 USD**
+
+---
+
+## Option A: ECS Fargate (Growth)
 
 ### Architecture Diagram
 
@@ -732,7 +924,26 @@ module "monitoring" {
 
 ---
 
-## Migration Path: A to B
+## Migration Path: 0 to A to B
+
+### Option 0 → Option A (when to migrate)
+
+Migrate when any of these apply:
+- Sustained traffic above what a single t4g.small can handle
+- Need zero-downtime deployments (currently ~30s downtime during `docker compose up --build`)
+- Want managed database backups and point-in-time recovery
+- Need horizontal scaling
+
+**What changes:**
+- PostgreSQL moves from Docker to RDS (~$15/mo)
+- Frontend and backend move from EC2 Docker to ECS Fargate (~$18/mo)
+- Add ALB for routing (~$22/mo)
+- Add NAT instance or gateway for private subnets
+- EC2 instance is terminated
+- `pg_dump` existing data and restore into RDS
+- Total cost jumps from ~$14/mo to ~$60-95/mo
+
+### Option A → Option B
 
 The Terraform module structure is designed so that moving from Option A to Option B is a parameter change, not a rewrite:
 
@@ -797,12 +1008,40 @@ A single `t4g.small` EC2 instance (~$12/mo) running both containers would be che
 - Aligns with the baseline project's Fargate usage
 - The cost difference is small ($6/mo) for meaningful operational simplification
 
+### Why EC2 Docker Compose over ECS Fargate for MVP?
+
+The Fargate setup (Option A) costs $60-95/mo — mostly ALB ($22) + NAT ($4-33) + RDS ($15), not compute. For a low-traffic MVP:
+- A single t4g.small ($12/mo) runs the exact same Docker Compose stack as local dev
+- No ALB needed — Caddy handles reverse proxying and SSL
+- No RDS needed — PostgreSQL runs in Docker, data on EBS
+- No NAT needed — EC2 sits in a public subnet
+- Same deployment model: `docker compose up --build`
+- Trade-off: you manage OS updates and have a single point of failure — acceptable for MVP
+
+### Why not S3 for the frontend?
+
+Next.js uses server-side rendering (SSR) for `/pakker`, `/produkter`, and `/pakker/[id]`. These pages fetch data from the backend at request time and return fully-rendered HTML (good for SEO and perceived load speed).
+
+S3 only serves static files. To use S3, you'd need to convert to `output: "export"` (static HTML), which means:
+- Every page loads as an empty HTML shell, then fetches data via client-side JavaScript
+- Worse SEO (search engines see empty pages before JS runs)
+- Slower perceived load (users see a blank page, then content pops in)
+- Not worth the ~$3/mo savings when everything runs on one EC2 anyway
+
+### Why Caddy over CloudFront for MVP?
+
+- Caddy provides automatic Let's Encrypt SSL at zero cost
+- CloudFront requires ACM certificates and adds configuration complexity
+- At low traffic, CloudFront's caching benefit is negligible
+- Caddy runs as a Docker container alongside the app — simple to manage
+- CloudFront can be added later (Option A/B) when CDN caching matters
+
 ### Cost Comparison Summary
 
-| | Option A (NAT Instance) | Option A (NAT Gateway) | Option B (baseline) | Option B (scaled) |
-|---|---|---|---|---|
-| Compute | $18 | $18 | $72 | $180 |
-| Networking | $26 | $55 | $112 | $112 |
-| Database | $15 | $15 | $50 | $50 |
-| Other | $5 | $5 | $26 | $38 |
-| **Total** | **~$64** | **~$93** | **~$260** | **~$380** |
+| | Option 0 (EC2) | Option A (NAT Instance) | Option A (NAT Gateway) | Option B (baseline) | Option B (scaled) |
+|---|---|---|---|---|---|
+| Compute | $12 | $18 | $18 | $72 | $180 |
+| Networking | $0 | $26 | $55 | $112 | $112 |
+| Database | $0 | $15 | $15 | $50 | $50 |
+| Other | $2 | $5 | $5 | $26 | $38 |
+| **Total** | **~$14** | **~$64** | **~$93** | **~$260** | **~$380** |

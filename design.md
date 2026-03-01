@@ -144,16 +144,17 @@
 
 ## Sprint 6: AWS-infrastruktur med Terraform (IKKE STARTET)
 
-Se `infrastructure.md` for fullstendig plan. Implementer Option A (MVP):
-- VPC med offentlige + private subnett i eu-north-1
-- ECS Fargate for frontend og backend
-- RDS PostgreSQL (db.t4g.micro, single-AZ)
-- ALB med rutingregler (/api/* -> backend, /* -> frontend)
-- CloudFront for CDN og SSL
-- ECR for Docker-images
-- SSM Parameter Store for hemmeligheter
-- Route 53 for DNS
-- Terraform-moduler: networking, ecr, ecs, alb, database, cdn, dns, secrets, monitoring
+Se `infrastructure.md` for fullstendig plan. Implementer **Option 0** (EC2 MVP, ~$14/mo):
+- VPC med 1 offentlig subnett i eu-north-1
+- EC2 t4g.small (2 vCPU, 2GB RAM) med Docker Compose
+- Caddy som reverse proxy med auto Let's Encrypt SSL
+- EBS gp3 20GB for data + daglige snapshots
+- Elastic IP for statisk IP (bruker peker A-record hit)
+- Security group: 80, 443, 22
+- docker-compose.prod.yml med Caddy-container
+- deploy.sh for app-oppdateringer (SSH + docker compose up --build)
+- Terraform-moduler: networking, compute
+- Ingen RDS, ALB, CloudFront, NAT, ECS — alt kjorer pa en instans
 
 ---
 
