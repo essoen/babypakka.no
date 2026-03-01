@@ -14,8 +14,8 @@ data class RegisterRequest(
     val email: String,
 
     @field:NotBlank
-    @field:Size(min = 6)
-    @field:Schema(description = "Password (min 6 characters)", example = "passord123")
+    @field:Size(min = 8)
+    @field:Schema(description = "Password (min 8 characters)", example = "passord123")
     val password: String,
 
     @field:NotBlank

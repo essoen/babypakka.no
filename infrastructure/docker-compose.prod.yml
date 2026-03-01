@@ -37,13 +37,14 @@ services:
     environment:
       DATASOURCE_URL: jdbc:postgresql://postgres:5432/babypakka
       DATASOURCE_USERNAME: babypakka
-      DATASOURCE_PASSWORD: "${DB_PASSWORD:-babypakka_dev}"
-      JWT_GENERATOR_SIGNATURE_SECRET: "${JWT_SECRET:-default-dev-secret-change-in-production}"
+      DATASOURCE_PASSWORD: "${DB_PASSWORD:?DB_PASSWORD must be set}"
+      JWT_GENERATOR_SIGNATURE_SECRET: "${JWT_SECRET:?JWT_SECRET must be set}"
+      CORS_ALLOWED_ORIGINS: "https://babypakka.no"
     restart: unless-stopped
 
   postgres:
     environment:
-      POSTGRES_PASSWORD: "${DB_PASSWORD:-babypakka_dev}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD:?DB_PASSWORD must be set}"
     restart: unless-stopped
 
 volumes:

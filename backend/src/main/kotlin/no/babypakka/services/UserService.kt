@@ -5,6 +5,7 @@ import jakarta.transaction.Transactional
 import mu.KotlinLogging
 import no.babypakka.domain.*
 import no.babypakka.system.BcryptPasswordEncoder
+import no.babypakka.system.parseEnum
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.Optional
@@ -97,10 +98,21 @@ open class UserService(
         }
     }
 
+    fun changePassword(userId: Long, request: ChangePasswordRequest): Boolean {
+        logger.info { "Changing password for userId=$userId" }
+        val user = userRepository.findById(userId).orElse(null) ?: return false
+        if (!passwordEncoder.matches(request.currentPassword, user.passwordHash)) {
+            throw IllegalArgumentException("Nåværende passord er feil")
+        }
+        user.passwordHash = passwordEncoder.encode(request.newPassword)
+        userRepository.update(user)
+        return true
+    }
+
     fun updateRole(id: Long, role: String): Optional<UserResponse> {
         logger.info { "Admin: updating role for userId=$id to $role" }
         return userRepository.findById(id).map { user ->
-            user.role = UserRole.valueOf(role.uppercase())
+            user.role = parseEnum<UserRole>(role)
             UserResponse.from(userRepository.update(user))
         }
     }

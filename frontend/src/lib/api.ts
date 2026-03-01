@@ -186,6 +186,23 @@ export async function updateAddress(data: { streetAddress: string; postalCode: s
   return putApi<User>('/api/users/me/address', data);
 }
 
+export async function changePassword(data: { currentPassword: string; newPassword: string }): Promise<void> {
+  const res = await fetch(`${CLIENT_API_BASE}/api/users/me/password`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(data),
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+    throw new Error(errorData?.message || `API-feil: ${res.status} ${res.statusText}`);
+  }
+}
+
 // ---- Orders API (client components) ----
 
 export async function getOrders(): Promise<Order[]> {

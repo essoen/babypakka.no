@@ -4,6 +4,7 @@ import jakarta.inject.Singleton
 import jakarta.transaction.Transactional
 import mu.KotlinLogging
 import no.babypakka.domain.*
+import no.babypakka.system.parseEnum
 import java.util.Optional
 
 private val logger = KotlinLogging.logger {}
@@ -40,7 +41,7 @@ open class ProductService(
             name = request.name
             description = request.description
             imageUrl = request.imageUrl
-            condition = ProductCondition.valueOf(request.condition.uppercase())
+            condition = parseEnum<ProductCondition>(request.condition)
         }
         return ProductResponse.from(productRepository.save(product))
     }

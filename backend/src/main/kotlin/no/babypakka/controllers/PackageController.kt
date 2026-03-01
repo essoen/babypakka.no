@@ -13,6 +13,7 @@ import no.babypakka.domain.PackageListResponse
 import no.babypakka.domain.PackageResponse
 import no.babypakka.domain.PackageType
 import no.babypakka.services.PackageService
+import no.babypakka.system.parseEnum
 
 @Tag(name = "Pakker")
 @Controller("/api/packages")
@@ -30,7 +31,7 @@ class PackageController(
     ): List<PackageListResponse> {
         return when {
             !type.isNullOrBlank() -> {
-                val packageType = PackageType.valueOf(type.uppercase())
+                val packageType = parseEnum<PackageType>(type)
                 packageService.listByType(packageType)
             }
             ageCategoryId != null -> packageService.listByAgeCategoryId(ageCategoryId)

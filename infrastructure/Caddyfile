@@ -1,4 +1,10 @@
 babypakka.no {
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Frame-Options "DENY"
+        X-Content-Type-Options "nosniff"
+    }
+
     handle /api/* {
         reverse_proxy backend:8080
     }
@@ -10,15 +16,6 @@ babypakka.no {
     }
 }
 
-# IP-based access (HTTP only, no SSL)
-:80 {
-    handle /api/* {
-        reverse_proxy backend:8080
-    }
-    handle /health {
-        reverse_proxy backend:8080
-    }
-    handle {
-        reverse_proxy frontend:3000
-    }
+http:// {
+    redir https://{host}{uri} permanent
 }

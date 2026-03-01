@@ -4,6 +4,7 @@ import jakarta.inject.Singleton
 import jakarta.transaction.Transactional
 import mu.KotlinLogging
 import no.babypakka.domain.*
+import no.babypakka.system.parseEnum
 import java.time.Instant
 import java.util.Optional
 
@@ -63,7 +64,7 @@ open class OrderService(
     open fun findAll(status: String? = null): List<AdminOrderResponse> {
         logger.debug { "Admin: listing all orders, status=$status" }
         val orders = if (status != null) {
-            orderRepository.findByStatus(OrderStatus.valueOf(status.uppercase()))
+            orderRepository.findByStatus(parseEnum<OrderStatus>(status))
         } else {
             orderRepository.findAll()
         }
@@ -81,7 +82,7 @@ open class OrderService(
     open fun updateStatus(id: Long, request: UpdateOrderStatusRequest): Optional<AdminOrderResponse> {
         logger.info { "Admin: updating order id=$id status=${request.status}" }
         return orderRepository.findById(id).map { order ->
-            order.status = OrderStatus.valueOf(request.status.uppercase())
+            order.status = parseEnum<OrderStatus>(request.status)
             if (request.trackingNumber != null) order.trackingNumber = request.trackingNumber
             if (request.note != null) order.note = request.note
             order.updatedAt = Instant.now()

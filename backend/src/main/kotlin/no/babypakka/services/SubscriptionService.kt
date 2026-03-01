@@ -4,6 +4,7 @@ import jakarta.inject.Singleton
 import jakarta.transaction.Transactional
 import mu.KotlinLogging
 import no.babypakka.domain.*
+import no.babypakka.system.parseEnum
 import java.time.Instant
 import java.util.Optional
 
@@ -95,7 +96,7 @@ open class SubscriptionService(
     open fun findAll(status: String? = null): List<SubscriptionResponse> {
         logger.debug { "Admin: listing all subscriptions, status filter=$status" }
         val subs = if (status != null) {
-            subscriptionRepository.findByStatus(SubscriptionStatus.valueOf(status.uppercase()))
+            subscriptionRepository.findByStatus(parseEnum<SubscriptionStatus>(status))
         } else {
             subscriptionRepository.findAll()
         }
@@ -110,7 +111,7 @@ open class SubscriptionService(
     open fun updateStatus(id: Long, newStatus: String): Optional<SubscriptionResponse> {
         logger.info { "Admin: updating subscription id=$id to status=$newStatus" }
         return subscriptionRepository.findById(id).map { sub ->
-            sub.status = SubscriptionStatus.valueOf(newStatus.uppercase())
+            sub.status = parseEnum<SubscriptionStatus>(newStatus)
             if (sub.status == SubscriptionStatus.CANCELLED) {
                 sub.endedAt = Instant.now()
             } else {

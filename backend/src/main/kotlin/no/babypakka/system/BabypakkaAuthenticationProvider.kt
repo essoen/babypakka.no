@@ -28,13 +28,15 @@ class BabypakkaAuthenticationProvider(
 
         val userOpt = userRepository.findByEmail(email)
         if (userOpt.isEmpty) {
-            logger.warn { "Authentication failed: user not found for email=$email" }
+            logger.warn { "Authentication failed: user not found" }
+            logger.debug { "Authentication failed: user not found for email=$email" }
             return AuthenticationResponse.failure(AuthenticationFailureReason.USER_NOT_FOUND)
         }
 
         val user = userOpt.get()
         if (!passwordEncoder.matches(password, user.passwordHash)) {
-            logger.warn { "Authentication failed: invalid password for email=$email" }
+            logger.warn { "Authentication failed: invalid password" }
+            logger.debug { "Authentication failed: invalid password for email=$email" }
             return AuthenticationResponse.failure(AuthenticationFailureReason.CREDENTIALS_DO_NOT_MATCH)
         }
 

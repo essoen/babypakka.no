@@ -45,6 +45,15 @@ export default function DashboardPage() {
   const [addressError, setAddressError] = useState('');
   const [hasAddress, setHasAddress] = useState(false);
 
+  // Password form
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/logg-inn');
@@ -84,6 +93,33 @@ export default function DashboardPage() {
       setAddressError('Kunne ikke lagre adressen. Vennligst prøv igjen.');
     } finally {
       setAddressSaving(false);
+    }
+  }
+
+  async function handlePasswordChange(e: React.FormEvent) {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Passordene er ikke like.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordError('Nytt passord må være minst 6 tegn.');
+      return;
+    }
+    setPasswordSaving(true);
+    try {
+      await api.changePassword({ currentPassword, newPassword });
+      setPasswordSuccess('Passordet er endret.');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setShowPasswordForm(false);
+    } catch (err) {
+      setPasswordError(err instanceof Error ? err.message : 'Kunne ikke endre passord. Prøv igjen.');
+    } finally {
+      setPasswordSaving(false);
     }
   }
 
@@ -198,6 +234,56 @@ export default function DashboardPage() {
           <button onClick={() => setShowAddressForm(true)} className="text-sm font-medium text-baby-blue hover:text-baby-blue-dark">
             Endre
           </button>
+        </div>
+      )}
+
+      {/* Password change */}
+      {!showPasswordForm && (
+        <div className="mt-4 flex items-center justify-between rounded-2xl bg-white px-5 py-3 shadow-sm">
+          <div className="text-sm">
+            <span className="text-baby-text-light">Passord</span>
+            {passwordSuccess && <span className="ml-2 text-baby-sage text-xs font-medium">{passwordSuccess}</span>}
+          </div>
+          <button onClick={() => { setShowPasswordForm(true); setPasswordSuccess(''); }} className="text-sm font-medium text-baby-blue hover:text-baby-blue-dark">
+            Bytt passord
+          </button>
+        </div>
+      )}
+
+      {showPasswordForm && (
+        <div className="mt-4 rounded-2xl bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-bold text-baby-text">Bytt passord</h2>
+          {passwordError && (
+            <div className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-600">{passwordError}</div>
+          )}
+          <form onSubmit={handlePasswordChange} className="mt-4 space-y-3">
+            <div>
+              <label htmlFor="currentPw" className="block text-sm font-medium text-baby-text">Nåværende passord</label>
+              <input id="currentPw" type="password" required value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-baby-blue focus:outline-none focus:ring-1 focus:ring-baby-blue" />
+            </div>
+            <div>
+              <label htmlFor="newPw" className="block text-sm font-medium text-baby-text">Nytt passord</label>
+              <input id="newPw" type="password" required value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-baby-blue focus:outline-none focus:ring-1 focus:ring-baby-blue"
+                placeholder="Minst 6 tegn" />
+            </div>
+            <div>
+              <label htmlFor="confirmPw" className="block text-sm font-medium text-baby-text">Bekreft nytt passord</label>
+              <input id="confirmPw" type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-baby-blue focus:outline-none focus:ring-1 focus:ring-baby-blue" />
+            </div>
+            <div className="flex gap-3">
+              <button type="button" onClick={() => { setShowPasswordForm(false); setPasswordError(''); }}
+                className="flex-1 rounded-full border border-gray-300 py-2 text-sm font-medium text-baby-text">
+                Avbryt
+              </button>
+              <button type="submit" disabled={passwordSaving}
+                className="flex-1 rounded-full bg-baby-blue py-2 text-sm font-semibold text-white hover:bg-baby-blue-dark disabled:opacity-50">
+                {passwordSaving ? 'Lagrer...' : 'Endre passord'}
+              </button>
+            </div>
+          </form>
         </div>
       )}
 

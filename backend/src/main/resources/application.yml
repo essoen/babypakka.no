@@ -8,7 +8,7 @@ micronaut:
       configurations:
         web:
           allowed-origins:
-            - http://localhost:3000
+            - "${CORS_ALLOWED_ORIGINS:http://localhost:3000}"
           allowed-origins-regex:
             - http://localhost:.*
             - http://frontend:.*
@@ -48,10 +48,10 @@ micronaut:
           - isAnonymous()
       - pattern: /swagger/**
         access:
-          - isAnonymous()
+          - ROLE_ADMIN
       - pattern: /swagger-ui/**
         access:
-          - isAnonymous()
+          - ROLE_ADMIN
       - pattern: /health/**
         access:
           - isAnonymous()
@@ -96,4 +96,4 @@ jackson:
 endpoints:
   health:
     enabled: true
-    sensitive: false
+    sensitive: true

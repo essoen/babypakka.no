@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import no.babypakka.domain.ChangePasswordRequest
 import no.babypakka.domain.UpdateAddressRequest
 import no.babypakka.domain.UserResponse
 import no.babypakka.services.UserService
@@ -38,5 +39,22 @@ class UserController(
         return userService.updateAddress(userId, request)
             .map { HttpResponse.ok(it) }
             .orElse(HttpResponse.notFound())
+    }
+
+    @Operation(summary = "Endre passord")
+    @ApiResponse(responseCode = "200", description = "Passord endret")
+    @ApiResponse(responseCode = "400", description = "Nåværende passord er feil")
+    @Put("/me/password")
+    fun changePassword(@Body @Valid request: ChangePasswordRequest, principal: Principal): HttpResponse<*> {
+        val userId = principal.name.toLong()
+        return try {
+            if (userService.changePassword(userId, request)) {
+                HttpResponse.ok(mapOf("message" to "Passord endret"))
+            } else {
+                HttpResponse.notFound<Any>()
+            }
+        } catch (e: IllegalArgumentException) {
+            HttpResponse.badRequest(mapOf("message" to e.message))
+        }
     }
 }

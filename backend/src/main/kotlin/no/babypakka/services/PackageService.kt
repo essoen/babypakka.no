@@ -4,6 +4,7 @@ import jakarta.inject.Singleton
 import jakarta.transaction.Transactional
 import mu.KotlinLogging
 import no.babypakka.domain.*
+import no.babypakka.system.parseEnum
 import java.util.Optional
 
 private val logger = KotlinLogging.logger {}
@@ -49,7 +50,7 @@ open class PackageService(
         val pkg = BabyPackage().apply {
             name = request.name
             description = request.description
-            type = PackageType.valueOf(request.type.uppercase())
+            type = parseEnum<PackageType>(request.type)
             this.ageCategory = ageCategory
             monthlyPrice = request.monthlyPrice
             challengeTag = request.challengeTag
