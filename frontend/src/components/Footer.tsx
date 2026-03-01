@@ -22,12 +22,6 @@ export default function Footer() {
               Om oss
             </Link>
             <Link
-              href="/investor"
-              className="text-sm text-baby-text-light hover:text-baby-blue transition-colors"
-            >
-              Investor
-            </Link>
-            <Link
               href="/kontakt"
               className="text-sm text-baby-text-light hover:text-baby-blue transition-colors"
             >
