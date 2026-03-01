@@ -1,12 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
   const { user, isLoading, logout } = useAuth();
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
@@ -76,7 +83,7 @@ export default function Header() {
             type="button"
             className="inline-flex items-center justify-center rounded-md p-2 text-baby-text md:hidden"
             onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Åpne meny"
+            aria-label={menuOpen ? 'Lukk meny' : 'Åpne meny'}
             aria-expanded={menuOpen}
           >
             {menuOpen ? (
@@ -128,7 +135,7 @@ export default function Header() {
                         Admin
                       </Link>
                     )}
-                    <div className="mt-2 flex items-center justify-between px-3">
+                    <div className="mt-2 border-t border-gray-100 pt-3 flex items-center justify-between px-3">
                       <span className="text-sm text-baby-text-light">{user.name}</span>
                       <button
                         onClick={() => { logout(); setMenuOpen(false); }}
@@ -141,7 +148,7 @@ export default function Header() {
                 ) : (
                   <Link
                     href="/logg-inn"
-                    className="mt-2 rounded-full bg-baby-blue px-5 py-2 text-center text-sm font-medium text-white transition-colors hover:bg-baby-blue-dark"
+                    className="mt-2 block rounded-full bg-baby-blue px-5 py-2 text-center text-sm font-medium text-white transition-colors hover:bg-baby-blue-dark"
                     onClick={() => setMenuOpen(false)}
                   >
                     Logg inn
