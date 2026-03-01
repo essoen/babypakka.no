@@ -1,6 +1,6 @@
 'use client';
 
-export default function AdminError({ error, reset }: { error: Error; reset: () => void }) {
+export default function AdminError({ reset }: { error: Error; reset: () => void }) {
   return (
     <div className="rounded-2xl bg-baby-warm p-8 text-center">
       <h2 className="text-xl font-bold text-baby-text">Noe gikk galt i admin</h2>

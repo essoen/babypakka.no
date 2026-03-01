@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Product } from '@/types';
 
 interface ProductCardProps {
@@ -16,10 +17,11 @@ export default function ProductCard({ product }: ProductCardProps) {
       {/* Image */}
       <div className="relative aspect-[4/3] bg-baby-warm">
         {product.imageUrl ? (
-          <img
+          <Image
             src={product.imageUrl}
             alt={product.name}
-            className="h-full w-full object-cover"
+            fill
+            className="object-cover"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">

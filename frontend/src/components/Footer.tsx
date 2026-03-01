@@ -16,19 +16,19 @@ export default function Footer() {
 
           <nav className="flex gap-6">
             <Link
-              href="#"
+              href="/om-oss"
               className="text-sm text-baby-text-light hover:text-baby-blue transition-colors"
             >
               Om oss
             </Link>
             <Link
-              href="#"
+              href="/kontakt"
               className="text-sm text-baby-text-light hover:text-baby-blue transition-colors"
             >
               Kontakt
             </Link>
             <Link
-              href="#"
+              href="/personvern"
               className="text-sm text-baby-text-light hover:text-baby-blue transition-colors"
             >
               Personvern

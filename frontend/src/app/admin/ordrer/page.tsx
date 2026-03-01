@@ -22,16 +22,6 @@ function statusBadgeClasses(status: string): string {
   }
 }
 
-function statusLabel(status: string): string {
-  switch (status) {
-    case 'PENDING': return 'Ventende';
-    case 'PACKING': return 'Pakkes';
-    case 'SHIPPED': return 'Sendt';
-    case 'DELIVERED': return 'Levert';
-    default: return status;
-  }
-}
-
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [loading, setLoading] = useState(true);

@@ -17,25 +17,26 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('babypakka_token');
+  });
+  const [isLoading, setIsLoading] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem('babypakka_token') !== null;
+  });
 
-  // On mount, check for existing token
+  // On mount, validate existing token by fetching current user
   useEffect(() => {
-    const savedToken = localStorage.getItem('babypakka_token');
-    if (savedToken) {
-      setToken(savedToken);
-      api.getCurrentUser()
-        .then((u) => setUser(u))
-        .catch(() => {
-          localStorage.removeItem('babypakka_token');
-          setToken(null);
-        })
-        .finally(() => setIsLoading(false));
-    } else {
-      setIsLoading(false);
-    }
-  }, []);
+    if (!token) return;
+    api.getCurrentUser()
+      .then((u) => setUser(u))
+      .catch(() => {
+        localStorage.removeItem('babypakka_token');
+        setToken(null);
+      })
+      .finally(() => setIsLoading(false));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loginFn = useCallback(async (email: string, password: string) => {
     const response = await api.login(email, password);
