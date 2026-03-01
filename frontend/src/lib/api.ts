@@ -4,8 +4,10 @@ import { Package, Product, AgeCategory, AuthResponse, User, Child, Subscription,
 const API_BASE = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 // Client-side API base (for 'use client' components that can't access server env vars)
+// In the browser: use NEXT_PUBLIC_API_URL if set, otherwise empty string (relative URLs via same origin).
+// On the server: use API_URL (e.g. http://backend:8080 in Docker).
 const CLIENT_API_BASE = typeof window !== 'undefined'
-  ? (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080')
+  ? (process.env.NEXT_PUBLIC_API_URL || '')
   : API_BASE;
 
 function getAuthHeaders(): Record<string, string> {
