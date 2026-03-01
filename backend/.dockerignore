@@ -1,2 +1,9 @@
 *
 !build/libs/*-all.jar
+!gradle/
+!gradlew
+!build.gradle.kts
+!settings.gradle.kts
+!gradle.properties
+!openapi.properties
+!src/
