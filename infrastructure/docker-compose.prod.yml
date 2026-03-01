@@ -32,6 +32,9 @@ services:
     restart: unless-stopped
 
   backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.ci
     environment:
       DATASOURCE_URL: jdbc:postgresql://postgres:5432/babypakka
       DATASOURCE_USERNAME: babypakka
