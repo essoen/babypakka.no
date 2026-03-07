@@ -1,13 +1,17 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Om oss | Babypakka.no',
-  description: 'Babypakka er et konsept for abonnementsbasert babyutstyr. En idé fra Stein-Otto Svorstøl som søker investorer og medgründere.',
+  title: 'Om oss',
+  description: 'Babypakka gjør kvalitets babyutstyr tilgjengelig gjennom abonnement. Bærekraftig, rimelig og enkelt for norske foreldre.',
+  keywords: ['babypakka', 'om babypakka', 'babyutstyr abonnement', 'bærekraftig babyutstyr', 'leie babyutstyr norge'],
   openGraph: {
-    title: 'Om oss | Babypakka.no',
-    description: 'Vi gjør kvalitetsutstyr for baby tilgjengelig gjennom abonnement.',
+    title: 'Om Babypakka',
+    description: 'Kvalitets babyutstyr tilgjengelig gjennom abonnement. Bærekraftig og rimelig.',
     type: 'website',
     locale: 'nb_NO',
+  },
+  alternates: {
+    canonical: '/om-oss',
   },
 };
 

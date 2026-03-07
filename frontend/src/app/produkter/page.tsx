@@ -4,13 +4,17 @@ import ProductCard from '@/components/ProductCard';
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Produkter | Babypakka.no',
-  description: 'Utforsk alle babyproduktene våre. Babynest, bæresele, høystol, sparkesykkel og mer.',
+  title: 'Babyutstyr og produkter',
+  description: 'Utforsk babyutstyr du kan leie. Babynest, bæresele, høystol, sparkesykkel og mer. Filtrer etter barnets alder.',
+  keywords: ['babyutstyr', 'babynest', 'bæresele', 'høystol baby', 'sparkesykkel barn', 'leie barnevogn', 'babyutstyr utleie'],
   openGraph: {
-    title: 'Produktkatalog | Babypakka.no',
-    description: 'Utforsk alle babyproduktene vare.',
+    title: 'Babyutstyr og produkter | Babypakka.no',
+    description: 'Utforsk babyutstyr du kan leie. Babynest, bæresele, høystol og mer.',
     type: 'website',
     locale: 'nb_NO',
+  },
+  alternates: {
+    canonical: '/produkter',
   },
 };
 

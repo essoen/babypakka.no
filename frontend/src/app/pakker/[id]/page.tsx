@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getPackage } from '@/lib/api';
 import ProductCard from '@/components/ProductCard';
+import JsonLd from '@/components/JsonLd';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -11,14 +12,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { id } = await params;
   try {
     const pkg = await getPackage(Number(id));
+    const description = pkg.description || `Lei ${pkg.name} fra Babypakka. Babyutstyrspakke med månedlig abonnement.`;
     return {
-      title: `${pkg.name} | Babypakka.no`,
-      description: pkg.description || `Detaljer om ${pkg.name}, babyutstyrspakke fra Babypakka.no`,
+      title: pkg.name,
+      description,
+      keywords: ['lei babyutstyr', 'babypakke', pkg.name.toLowerCase(), 'babyutstyr abonnement'],
       openGraph: {
         title: `${pkg.name} | Babypakka.no`,
-        description: pkg.description || `Detaljer om ${pkg.name}`,
+        description,
         type: 'website',
         locale: 'nb_NO',
+      },
+      alternates: {
+        canonical: `/pakker/${id}`,
       },
     };
   } catch {
@@ -63,8 +69,45 @@ export default async function PackageDetailPage({ params }: PageProps) {
 
   const isBase = pkg.type === 'BASE';
 
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: pkg.name,
+    description: pkg.description,
+    url: `https://babypakka.no/pakker/${id}`,
+    brand: {
+      '@type': 'Organization',
+      name: 'Babypakka',
+    },
+    offers: {
+      '@type': 'Offer',
+      price: pkg.monthlyPrice,
+      priceCurrency: 'NOK',
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: pkg.monthlyPrice,
+        priceCurrency: 'NOK',
+        billingDuration: 'P1M',
+        unitText: 'per måned',
+      },
+      availability: 'https://schema.org/InStock',
+      seller: {
+        '@type': 'Organization',
+        name: 'Babypakka',
+      },
+    },
+    ...(isBase && pkg.ageCategory ? {
+      audience: {
+        '@type': 'PeopleAudience',
+        suggestedMinAge: pkg.ageCategory.minMonths,
+        suggestedMaxAge: pkg.ageCategory.maxMonths,
+      },
+    } : {}),
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+      <JsonLd data={productJsonLd} />
       {/* Back link */}
       <Link
         href="/pakker"

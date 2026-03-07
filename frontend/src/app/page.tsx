@@ -1,14 +1,19 @@
 import Link from 'next/link';
+import JsonLd from '@/components/JsonLd';
 
 export const metadata = {
-    title: 'Babypakka.no – Lei babyutstyr tilpasset barnets alder',
-  description: 'Abonnementstjeneste for babyutstyr. Foreldre registrerer barnets fodselsdato og far tilgang til alderstilpassede utstyrspakker.',
-  openGraph: {
   title: 'Babypakka.no – Lei babyutstyr tilpasset barnets alder',
-    description: 'Abonnementstjeneste for babyutstyr. Lei det du trenger, returner nar barnet vokser ut av det.',
+  description: 'Lei babyutstyr med månedlig abonnement. Alderstilpassede utstyrspakker fra nyfødt til 2 år. Bærekraftig, enkelt og rimelig.',
+  keywords: ['lei babyutstyr', 'babyutstyr abonnement', 'babypakke', 'leie barnevogn', 'babyutstyr nyfødt', 'utstyrspakke baby', 'bærekraftig babyutstyr', 'babypakka'],
+  openGraph: {
+    title: 'Babypakka.no – Lei babyutstyr tilpasset barnets alder',
+    description: 'Lei babyutstyr med månedlig abonnement. Alderstilpassede pakker fra nyfødt til 2 år.',
     type: 'website',
     locale: 'nb_NO',
     url: 'https://babypakka.no',
+  },
+  alternates: {
+    canonical: '/',
   },
 };
 
@@ -103,9 +108,37 @@ const addonPackages = [
   },
 ];
 
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Babypakka.no',
+  url: 'https://babypakka.no',
+  description: 'Lei babyutstyr med månedlig abonnement. Alderstilpassede utstyrspakker fra nyfødt til 2 år.',
+  inLanguage: 'nb',
+};
+
+const serviceJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: 'Babypakka',
+  description: 'Abonnementstjeneste for babyutstyr. Lei alderstilpassede utstyrspakker og bytt når barnet vokser.',
+  provider: {
+    '@type': 'Organization',
+    name: 'Babypakka',
+    url: 'https://babypakka.no',
+  },
+  areaServed: {
+    '@type': 'Country',
+    name: 'Norge',
+  },
+  serviceType: 'Utleie av babyutstyr',
+};
+
 export default function Home() {
   return (
     <>
+      <JsonLd data={websiteJsonLd} />
+      <JsonLd data={serviceJsonLd} />
       {/* Hero */}
       <section className="bg-gradient-to-b from-white to-baby-cream">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-32">

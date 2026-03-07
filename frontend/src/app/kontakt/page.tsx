@@ -1,17 +1,52 @@
+import JsonLd from '@/components/JsonLd';
+
 export const metadata = {
-  title: 'Kontakt oss | Babypakka.no',
-  description: 'Ta kontakt med Babypakka. Vi hjelper deg gjerne med spørsmål om abonnement, utstyr og levering.',
+  title: 'Kontakt oss',
+  description: 'Ta kontakt med Babypakka for spørsmål om babyutstyr, abonnement og levering. E-post: hei@babypakka.no.',
+  keywords: ['kontakt babypakka', 'babyutstyr kundeservice', 'babypakka e-post'],
   openGraph: {
     title: 'Kontakt oss | Babypakka.no',
     description: 'Ta kontakt med Babypakka. Vi hjelper deg gjerne!',
     type: 'website',
     locale: 'nb_NO',
   },
+  alternates: {
+    canonical: '/kontakt',
+  },
+};
+
+const contactJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ContactPage',
+  mainEntity: {
+    '@type': 'Organization',
+    name: 'Babypakka',
+    url: 'https://babypakka.no',
+    email: 'hei@babypakka.no',
+    contactPoint: {
+      '@type': 'ContactPoint',
+      email: 'hei@babypakka.no',
+      contactType: 'customer service',
+      availableLanguage: 'Norwegian',
+      hoursAvailable: {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+        opens: '09:00',
+        closes: '16:00',
+      },
+    },
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Oslo',
+      addressCountry: 'NO',
+    },
+  },
 };
 
 export default function KontaktPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
+      <JsonLd data={contactJsonLd} />
       <h1 className="text-3xl font-bold text-baby-text sm:text-4xl">Kontakt oss</h1>
       <p className="mt-4 text-lg text-baby-text-light">
         Vi hjelper deg gjerne! Ta kontakt med oss, så svarer vi så raskt vi kan.

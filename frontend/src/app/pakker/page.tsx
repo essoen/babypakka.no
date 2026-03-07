@@ -3,13 +3,17 @@ import { Package } from '@/types';
 import PackageCard from '@/components/PackageCard';
 
 export const metadata = {
-  title: 'Pakker | Babypakka.no',
-  description: 'Se alle utstyrspakker for baby, fra nyfødt til småbarn. Basispakker og tilleggspakker.',
+  title: 'Utstyrspakker for baby',
+  description: 'Lei babyutstyr i pakker tilpasset barnets alder. Basispakker fra nyfødt til 2 år og tilleggspakker for søvn, reise og amming.',
+  keywords: ['utstyrspakke baby', 'babypakke', 'lei babyutstyr', 'babyutstyr nyfødt', 'babyutstyr spedbarn', 'tilleggspakke baby'],
   openGraph: {
-    title: 'Utstyrspakker | Babypakka.no',
-    description: 'Se alle utstyrspakker for baby, fra nyfødt til småbarn.',
+    title: 'Utstyrspakker for baby | Babypakka.no',
+    description: 'Lei babyutstyr i pakker tilpasset barnets alder. Basispakker og tilleggspakker.',
     type: 'website',
     locale: 'nb_NO',
+  },
+  alternates: {
+    canonical: '/pakker',
   },
 };
 
