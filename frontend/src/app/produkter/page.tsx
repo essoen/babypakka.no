@@ -6,9 +6,12 @@ import Link from 'next/link';
 export const metadata = {
   title: 'Produkter | Babypakka.no',
   description: 'Utforsk alle babyproduktene våre. Babynest, bæresele, høystol, sparkesykkel og mer.',
+  alternates: {
+    canonical: 'https://babypakka.no/produkter',
+  },
   openGraph: {
     title: 'Produktkatalog | Babypakka.no',
-    description: 'Utforsk alle babyproduktene vare.',
+    description: 'Utforsk alle babyproduktene våre.',
     type: 'website',
     locale: 'nb_NO',
   },
