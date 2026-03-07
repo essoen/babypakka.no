@@ -1,6 +1,9 @@
 export const metadata = {
   title: 'Personvernerklæring | Babypakka.no',
   description: 'Les Babypakkas personvernerklæring. Hvordan vi samler inn, bruker og beskytter dine personopplysninger.',
+  alternates: {
+    canonical: 'https://babypakka.no/personvern',
+  },
   openGraph: {
     title: 'Personvernerklæring | Babypakka.no',
     description: 'Hvordan Babypakka behandler dine personopplysninger.',

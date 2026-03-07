@@ -1,6 +1,9 @@
 export const metadata = {
   title: 'Kontakt oss | Babypakka.no',
   description: 'Ta kontakt med Babypakka. Vi hjelper deg gjerne med spørsmål om abonnement, utstyr og levering.',
+  alternates: {
+    canonical: 'https://babypakka.no/kontakt',
+  },
   openGraph: {
     title: 'Kontakt oss | Babypakka.no',
     description: 'Ta kontakt med Babypakka. Vi hjelper deg gjerne!',

@@ -1,11 +1,14 @@
 import Link from 'next/link';
 
 export const metadata = {
-    title: 'Babypakka.no – Lei babyutstyr tilpasset barnets alder',
-  description: 'Abonnementstjeneste for babyutstyr. Foreldre registrerer barnets fodselsdato og far tilgang til alderstilpassede utstyrspakker.',
-  openGraph: {
   title: 'Babypakka.no – Lei babyutstyr tilpasset barnets alder',
-    description: 'Abonnementstjeneste for babyutstyr. Lei det du trenger, returner nar barnet vokser ut av det.',
+  description: 'Abonnementstjeneste for babyutstyr. Foreldre registrerer barnets fødselsdato og får tilgang til alderstilpassede utstyrspakker.',
+  alternates: {
+    canonical: 'https://babypakka.no',
+  },
+  openGraph: {
+    title: 'Babypakka.no – Lei babyutstyr tilpasset barnets alder',
+    description: 'Abonnementstjeneste for babyutstyr. Lei det du trenger, returner når barnet vokser ut av det.',
     type: 'website',
     locale: 'nb_NO',
     url: 'https://babypakka.no',
@@ -103,9 +106,22 @@ const addonPackages = [
   },
 ];
 
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Babypakka.no',
+  url: 'https://babypakka.no',
+  description: 'Abonnementstjeneste for babyutstyr. Lei alderstilpassede utstyrspakker for baby og småbarn.',
+  inLanguage: 'nb',
+};
+
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
       {/* Hero */}
       <section className="bg-gradient-to-b from-white to-baby-cream">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-32">

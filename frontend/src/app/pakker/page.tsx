@@ -5,6 +5,9 @@ import PackageCard from '@/components/PackageCard';
 export const metadata = {
   title: 'Pakker | Babypakka.no',
   description: 'Se alle utstyrspakker for baby, fra nyfødt til småbarn. Basispakker og tilleggspakker.',
+  alternates: {
+    canonical: 'https://babypakka.no/pakker',
+  },
   openGraph: {
     title: 'Utstyrspakker | Babypakka.no',
     description: 'Se alle utstyrspakker for baby, fra nyfødt til småbarn.',
