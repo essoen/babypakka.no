@@ -14,6 +14,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title: `${pkg.name} | Babypakka.no`,
       description: pkg.description || `Detaljer om ${pkg.name}, babyutstyrspakke fra Babypakka.no`,
+      alternates: {
+        canonical: `https://babypakka.no/pakker/${id}`,
+      },
       openGraph: {
         title: `${pkg.name} | Babypakka.no`,
         description: pkg.description || `Detaljer om ${pkg.name}`,
