@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export const metadata = {
   title: 'Produkter | Babypakka.no',
-  description: 'Utforsk alle babyproduktene våre. Babynest, bæresele, høystol, sparkesykkel og mer.',
+  description: 'Utforsk produktene du kan velge til din babypakke. Babynest, bæresele, høystol, sparkesykkel og mer.',
   alternates: {
     canonical: 'https://babypakka.no/produkter',
   },
@@ -61,7 +61,7 @@ export default async function ProdukterPage({ searchParams }: PageProps) {
     <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
       <h1 className="text-3xl font-bold text-baby-text sm:text-4xl">Produkter</h1>
       <p className="mt-2 text-baby-text-light">
-        Utforsk vårt utvalg av kvalitetsutstyr for babyer og småbarn.
+        Utforsk produktene du kan velge til din babypakke. Filtrer etter alderskategori.
       </p>
 
       {/* Age category filter */}

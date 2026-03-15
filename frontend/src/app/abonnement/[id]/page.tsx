@@ -98,9 +98,6 @@ export default function SubscriptionDetailPage({ params }: PageProps) {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold text-baby-text">{subscription.packageName}</h1>
-            <p className="mt-1 text-sm text-baby-text-light">
-              {subscription.packageType === 'base' ? 'Basispakke' : 'Tilleggspakke'}
-            </p>
           </div>
           <span
             className={`rounded-full px-3 py-1 text-sm font-medium ${
@@ -137,6 +134,22 @@ export default function SubscriptionDetailPage({ params }: PageProps) {
               <span className="font-medium text-baby-text">
                 {new Date(subscription.endedAt).toLocaleDateString('nb-NO')}
               </span>
+            </div>
+          )}
+
+          {subscription.products && subscription.products.length > 0 && (
+            <div className="rounded-lg bg-baby-cream px-4 py-3">
+              <p className="text-sm text-baby-text-light mb-2">Valgte produkter</p>
+              <ul className="space-y-1">
+                {subscription.products.map((p, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm">
+                    <svg className="h-4 w-4 shrink-0 text-baby-sage" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                    </svg>
+                    <span className="font-medium text-baby-text">{p}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>

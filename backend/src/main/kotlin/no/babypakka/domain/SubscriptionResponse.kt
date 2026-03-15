@@ -16,10 +16,10 @@ data class SubscriptionResponse(
     @field:Schema(description = "Child's name", example = "Lille Emma")
     val childName: String,
 
-    @field:Schema(description = "Package ID", example = "1")
-    val packageId: Long,
+    @field:Schema(description = "Package ID (legacy, may be null)")
+    val packageId: Long?,
 
-    @field:Schema(description = "Package name", example = "Nyfødtpakken")
+    @field:Schema(description = "Package name or age category label")
     val packageName: String,
 
     @field:Schema(description = "Package type", example = "base")
@@ -35,20 +35,24 @@ data class SubscriptionResponse(
     val startedAt: Instant,
 
     @field:Schema(description = "End date, null if active")
-    val endedAt: Instant?
+    val endedAt: Instant?,
+
+    @field:Schema(description = "Selected products in this subscription")
+    val products: List<String>
 ) {
     companion object {
         fun from(sub: Subscription) = SubscriptionResponse(
             id = sub.id!!,
             childId = sub.child!!.id!!,
             childName = sub.child!!.name,
-            packageId = sub.babyPackage!!.id!!,
-            packageName = sub.babyPackage!!.name,
-            packageType = sub.babyPackage!!.type.name.lowercase(),
-            monthlyPrice = sub.babyPackage!!.monthlyPrice,
+            packageId = sub.babyPackage?.id,
+            packageName = sub.babyPackage?.name ?: "Egendefinert pakke",
+            packageType = sub.babyPackage?.type?.name?.lowercase() ?: "base",
+            monthlyPrice = sub.babyPackage?.monthlyPrice ?: BigDecimal.ZERO,
             status = sub.status.name,
             startedAt = sub.startedAt,
-            endedAt = sub.endedAt
+            endedAt = sub.endedAt,
+            products = sub.selectedProducts.map { it.name }
         )
     }
 }

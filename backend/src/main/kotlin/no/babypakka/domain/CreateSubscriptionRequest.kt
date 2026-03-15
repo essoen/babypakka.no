@@ -11,6 +11,10 @@ data class CreateSubscriptionRequest(
     val childId: Long,
 
     @field:NotNull
-    @field:Schema(description = "Package ID to subscribe to", example = "1")
-    val packageId: Long
+    @field:Schema(description = "Age category ID determining the price tier", example = "1")
+    val ageCategoryId: Long,
+
+    @field:NotNull
+    @field:Schema(description = "List of selected product IDs", example = "[1, 2, 3]")
+    val productIds: List<Long>
 )

@@ -51,13 +51,14 @@ export interface Subscription {
   id: number;
   childId: number;
   childName: string;
-  packageId: number;
+  packageId: number | null;
   packageName: string;
   packageType: string;
   monthlyPrice: number;
   status: string;
   startedAt: string;
   endedAt: string | null;
+  products: string[];
 }
 
 // Admin types
