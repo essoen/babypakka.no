@@ -15,6 +15,7 @@ open class SubscriptionService(
     private val subscriptionRepository: SubscriptionRepository,
     private val childRepository: ChildRepository,
     private val babyPackageRepository: BabyPackageRepository,
+    private val productRepository: ProductRepository,
     private val orderService: OrderService,
     private val userRepository: UserRepository
 ) {
@@ -23,9 +24,9 @@ open class SubscriptionService(
     open fun findByUserId(userId: Long): List<SubscriptionResponse> {
         logger.debug { "Finding subscriptions for userId=$userId" }
         return subscriptionRepository.findByUserId(userId).map { sub ->
-            // Force lazy loading
             sub.child!!.name
-            sub.babyPackage!!.name
+            sub.babyPackage?.name
+            sub.selectedProducts.size
             SubscriptionResponse.from(sub)
         }
     }
@@ -37,14 +38,15 @@ open class SubscriptionService(
             .filter { it.user?.id == userId }
             .map { sub ->
                 sub.child!!.name
-                sub.babyPackage!!.name
+                sub.babyPackage?.name
+                sub.selectedProducts.size
                 SubscriptionResponse.from(sub)
             }
     }
 
     @Transactional
     open fun create(userId: Long, request: CreateSubscriptionRequest): SubscriptionResponse {
-        logger.info { "Creating subscription for userId=$userId, childId=${request.childId}, packageId=${request.packageId}" }
+        logger.info { "Creating subscription for userId=$userId, childId=${request.childId}, ageCategoryId=${request.ageCategoryId}, products=${request.productIds}" }
 
         // Validate user has address
         val user = userRepository.findById(userId)
@@ -57,14 +59,26 @@ open class SubscriptionService(
             .filter { it.user?.id == userId }
             .orElseThrow { IllegalArgumentException("Barnet ble ikke funnet eller tilhører ikke denne brukeren") }
 
-        val pkg = babyPackageRepository.findById(request.packageId)
-            .orElseThrow { IllegalArgumentException("Pakken ble ikke funnet") }
+        // Find the BASE package for this age category (determines pricing)
+        val pkg = babyPackageRepository.findByAgeCategoryId(request.ageCategoryId)
+            .firstOrNull { it.type == PackageType.BASE }
+            ?: throw IllegalArgumentException("Ingen pakke funnet for denne alderskategorien")
+
+        // Load selected products
+        val products = request.productIds.mapNotNull { productId ->
+            productRepository.findById(productId).orElse(null)
+        }.toMutableList()
+
+        if (products.isEmpty()) {
+            throw IllegalArgumentException("Du må velge minst ett produkt")
+        }
 
         val subscription = Subscription().apply {
             this.user = child.user
             this.child = child
             this.babyPackage = pkg
             this.status = SubscriptionStatus.ACTIVE
+            this.selectedProducts = products
         }
 
         val saved = subscriptionRepository.save(subscription)
@@ -72,7 +86,8 @@ open class SubscriptionService(
         orderService.createFromSubscription(saved)
         // Force lazy loading for response
         saved.child!!.name
-        saved.babyPackage!!.name
+        saved.babyPackage?.name
+        saved.selectedProducts.size
         return SubscriptionResponse.from(saved)
     }
 
@@ -87,7 +102,8 @@ open class SubscriptionService(
                 sub.endedAt = Instant.now()
                 val updated = subscriptionRepository.update(sub)
                 updated.child!!.name
-                updated.babyPackage!!.name
+                updated.babyPackage?.name
+                updated.selectedProducts.size
                 SubscriptionResponse.from(updated)
             }
     }
@@ -102,7 +118,8 @@ open class SubscriptionService(
         }
         return subs.map { sub ->
             sub.child!!.name
-            sub.babyPackage!!.name
+            sub.babyPackage?.name
+            sub.selectedProducts.size
             SubscriptionResponse.from(sub)
         }
     }
@@ -119,7 +136,8 @@ open class SubscriptionService(
             }
             val updated = subscriptionRepository.update(sub)
             updated.child!!.name
-            updated.babyPackage!!.name
+            updated.babyPackage?.name
+            updated.selectedProducts.size
             SubscriptionResponse.from(updated)
         }
     }

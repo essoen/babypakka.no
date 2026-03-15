@@ -27,7 +27,7 @@ data class AdminOrderResponse(
             userName = order.user!!.name,
             userEmail = order.user!!.email,
             childName = order.child!!.name,
-            packageName = order.subscription!!.babyPackage!!.name,
+            packageName = order.subscription!!.babyPackage?.name ?: "Egendefinert pakke",
             status = order.status.name,
             trackingNumber = order.trackingNumber,
             note = order.note,

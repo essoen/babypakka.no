@@ -34,7 +34,7 @@ export default function Header() {
               href="/pakker"
               className="text-sm font-medium text-baby-text hover:text-baby-blue transition-colors"
             >
-              Pakker
+              Sett sammen pakke
             </Link>
             <Link
               href="/produkter"
@@ -109,7 +109,7 @@ export default function Header() {
                 className="rounded-lg px-3 py-2 text-sm font-medium text-baby-text hover:bg-baby-warm"
                 onClick={() => setMenuOpen(false)}
               >
-                Pakker
+                Sett sammen pakke
               </Link>
               <Link
                 href="/produkter"

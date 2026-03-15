@@ -2,13 +2,13 @@ import Link from 'next/link';
 
 export const metadata = {
   title: 'Babypakka.no – Lei babyutstyr tilpasset barnets alder',
-  description: 'Abonnementstjeneste for babyutstyr. Foreldre registrerer barnets fødselsdato og får tilgang til alderstilpassede utstyrspakker.',
+  description: 'Abonnementstjeneste for babyutstyr. Velg produktene du trenger, tilpasset barnets alder. Fast månedspris.',
   alternates: {
     canonical: 'https://babypakka.no',
   },
   openGraph: {
     title: 'Babypakka.no – Lei babyutstyr tilpasset barnets alder',
-    description: 'Abonnementstjeneste for babyutstyr. Lei det du trenger, returner når barnet vokser ut av det.',
+    description: 'Sett sammen din egen babypakke. Velg produktene du trenger, betal en fast månedspris.',
     type: 'website',
     locale: 'nb_NO',
     url: 'https://babypakka.no',
@@ -19,7 +19,7 @@ const steps = [
   {
     number: '1',
     title: 'Registrer barnet ditt',
-    description: 'Oppgi fødselsdato, så finner vi riktig utstyr.',
+    description: 'Oppgi fødselsdato, så finner vi riktig alderskategori.',
     icon: (
       <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
@@ -28,11 +28,11 @@ const steps = [
   },
   {
     number: '2',
-    title: 'Velg din pakke',
-    description: 'Få en basispakke tilpasset barnets alder, pluss tilleggspakker ved behov.',
+    title: 'Velg dine produkter',
+    description: 'Plukk akkurat de produktene du trenger fra vårt utvalg, tilpasset barnets alder.',
     icon: (
       <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
       </svg>
     ),
   },
@@ -52,57 +52,34 @@ const agePhases = [
   {
     label: 'Nyfødt',
     range: '0–3 mnd',
-    description: 'Alt du trenger de første månedene, fra stellebord til babybadestamp.',
+    description: 'Babynest, stellematte, bæresele og alt du trenger de første månedene.',
     color: 'bg-baby-blue-light',
     textColor: 'text-baby-blue-dark',
+    price: 399,
   },
   {
     label: 'Spedbarn',
     range: '3–6 mnd',
-    description: 'Utstyr for de nysgjerrige dagene. Babysitter, leker og mer.',
+    description: 'Aktivitetsbue, lekematte, vognpose og mer for de nysgjerrige dagene.',
     color: 'bg-baby-pink-light',
     textColor: 'text-baby-pink',
+    price: 349,
   },
   {
     label: 'Krabber',
     range: '6–12 mnd',
-    description: 'Trygt og stimulerende utstyr for barnet som begynner å utforske.',
+    description: 'Sikkerhetsgitter, krabbestativ og stimulerende utstyr for utforskeren.',
     color: 'bg-baby-sage-light',
     textColor: 'text-baby-sage',
+    price: 449,
   },
   {
     label: 'Småbarn',
     range: '1–2 år',
-    description: 'Robuste produkter for aktive småbarn i full fart.',
+    description: 'Sparkesykkel, høystol og robuste produkter for aktive småbarn.',
     color: 'bg-baby-warm',
     textColor: 'text-baby-warm-dark',
-  },
-];
-
-const addonPackages = [
-  {
-    name: 'Søvnpakken',
-    challenge: 'Søvnutfordringer',
-    description: 'Hjelpemidler for bedre søvn, fra blackout-gardiner til white noise-maskin.',
-    price: 149,
-  },
-  {
-    name: 'Reisepakken',
-    challenge: 'Reise med baby',
-    description: 'Kompakt reiseutstyr som gjør turen enklere. Reiseseng, bæresele og mer.',
-    price: 199,
-  },
-  {
-    name: 'Ammepakken',
-    challenge: 'Amming',
-    description: 'Støtte for ammeperioden. Ammepute, brystpumpe og oppbevaringsutstyr.',
-    price: 149,
-  },
-  {
-    name: 'Aktivpakken',
-    challenge: 'Aktivitet og lek',
-    description: 'Leker og aktivitetsutstyr tilpasset barnets utviklingsfase.',
-    price: 129,
+    price: 499,
   },
 ];
 
@@ -111,7 +88,7 @@ const websiteJsonLd = {
   '@type': 'WebSite',
   name: 'Babypakka.no',
   url: 'https://babypakka.no',
-  description: 'Abonnementstjeneste for babyutstyr. Lei alderstilpassede utstyrspakker for baby og småbarn.',
+  description: 'Abonnementstjeneste for babyutstyr. Sett sammen din egen pakke med produkter tilpasset barnets alder.',
   inLanguage: 'nb',
 };
 
@@ -128,19 +105,19 @@ export default function Home() {
           <div className="flex flex-col items-center text-center lg:flex-row lg:text-left lg:gap-12">
             <div className="flex-1">
               <h1 className="text-4xl font-bold tracking-tight text-baby-text sm:text-5xl lg:text-6xl">
-                Babyutstyr som vokser{' '}
-                <span className="text-baby-blue">med barnet ditt</span>
+                Sett sammen din egen{' '}
+                <span className="text-baby-blue">babypakke</span>
               </h1>
               <p className="mt-6 max-w-xl text-lg text-baby-text-light">
-                Lei kvalitetsutstyr tilpasset barnets alder. Bytteferdig når barnet
-                vokser. Enkelt, bærekraftig og rimelig.
+                Velg akkurat de produktene du trenger, tilpasset barnets alder.
+                Fast månedspris, ingen bindingstid. Bytt når barnet vokser.
               </p>
               <div className="mt-8">
                 <Link
                   href="/pakker"
                   className="inline-flex items-center rounded-full bg-baby-blue px-8 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-baby-blue-dark"
                 >
-                  Kom i gang
+                  Se produkter
                 </Link>
               </div>
             </div>
@@ -157,7 +134,7 @@ export default function Home() {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"
+                    d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
                   />
                 </svg>
               </div>
@@ -197,10 +174,10 @@ export default function Home() {
       <section className="py-16 sm:py-24">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-center text-3xl font-bold text-baby-text sm:text-4xl">
-            Utstyr for hver fase
+            Velg produkter for barnets fase
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-baby-text-light">
-            Barnet ditt utvikler seg raskt. Vi sørger for at utstyret følger med.
+            Velg alderskategori og plukk de produktene som passer best for deg og barnet ditt. Fast månedspris per fase.
           </p>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {agePhases.map((phase) => (
@@ -221,6 +198,9 @@ export default function Home() {
                   <p className="mt-1 text-sm text-baby-text-light">
                     {phase.description}
                   </p>
+                  <p className="mt-3 text-xl font-bold text-baby-blue">
+                    {phase.price} <span className="text-sm font-normal text-baby-text-light">kr/mnd</span>
+                  </p>
                 </div>
               </Link>
             ))}
@@ -228,57 +208,21 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Tilleggspakker */}
-      <section className="bg-white py-16 sm:py-24">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center text-3xl font-bold text-baby-text sm:text-4xl">
-            Tilleggspakker
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-center text-baby-text-light">
-            Trenger du litt ekstra? Velg blant våre tilleggspakker for spesifikke behov.
-          </p>
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {addonPackages.map((addon) => (
-              <div
-                key={addon.name}
-                className="flex flex-col rounded-2xl bg-baby-cream p-5 shadow-sm"
-              >
-                <span className="inline-block w-fit rounded-full bg-baby-sage-light/50 px-3 py-1 text-xs font-medium text-baby-sage">
-                  {addon.challenge}
-                </span>
-                <h3 className="mt-3 text-lg font-semibold text-baby-text">
-                  {addon.name}
-                </h3>
-                <p className="mt-2 flex-1 text-sm text-baby-text-light">
-                  {addon.description}
-                </p>
-                <p className="mt-4 text-2xl font-bold text-baby-blue">
-                  {addon.price}{' '}
-                  <span className="text-base font-normal text-baby-text-light">
-                    kr/mnd
-                  </span>
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA bottom */}
-      <section className="py-16 sm:py-24">
+      <section className="bg-white py-16 sm:py-24">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-baby-text sm:text-4xl">
             Klar til å komme i gang?
           </h2>
           <p className="mt-4 text-lg text-baby-text-light">
-            Start med en basispakke og legg til det du trenger. Ingen bindingstid.
+            Registrer barnet ditt og velg produktene du trenger. Ingen bindingstid, og du kan endre valget når som helst.
           </p>
           <div className="mt-8">
             <Link
               href="/pakker"
               className="inline-flex items-center rounded-full bg-baby-blue px-8 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-baby-blue-dark"
             >
-              Se alle pakker
+              Kom i gang
             </Link>
           </div>
         </div>

@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { Package, Child } from '@/types';
+import { Package, Product, Child, AgeCategory } from '@/types';
 import * as api from '@/lib/api';
 
-const STEPS = ['Legg til barn', 'Velg basispakke', 'Tilleggspakker', 'Bekreft'];
+const STEPS = ['Legg til barn', 'Velg produkter', 'Bekreft'];
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -25,13 +25,14 @@ export default function OnboardingPage() {
   const [birthDate, setBirthDate] = useState('');
   const [createdChild, setCreatedChild] = useState<Child | null>(null);
 
-  // Step 2: base packages
+  // Step 2: product selection
+  const [ageCategories, setAgeCategories] = useState<AgeCategory[]>([]);
+  const [selectedAgeCategory, setSelectedAgeCategory] = useState<AgeCategory | null>(null);
+  const [availableProducts, setAvailableProducts] = useState<Product[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
   const [basePackages, setBasePackages] = useState<Package[]>([]);
-  const [selectedBasePackage, setSelectedBasePackage] = useState<Package | null>(null);
-
-  // Step 3: addon packages
-  const [addonPackages, setAddonPackages] = useState<Package[]>([]);
-  const [selectedAddons, setSelectedAddons] = useState<Package[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [monthlyPrice, setMonthlyPrice] = useState(0);
 
   // Redirect if not logged in, pre-fill address
   useEffect(() => {
@@ -45,7 +46,27 @@ export default function OnboardingPage() {
     }
   }, [authLoading, user, router]);
 
-  // Step 1 → Step 2: Create child, then load packages
+  // Load products when age category changes
+  useEffect(() => {
+    if (!selectedAgeCategory) return;
+    setLoadingProducts(true);
+    api.getProducts(selectedAgeCategory.id)
+      .then((products) => {
+        setAvailableProducts(products);
+        // Clear selections when switching category
+        setSelectedProducts([]);
+      })
+      .catch(() => setError('Kunne ikke hente produkter.'))
+      .finally(() => setLoadingProducts(false));
+
+    // Find price for this age category
+    const basePkg = basePackages.find(
+      (p) => p.ageCategory?.id === selectedAgeCategory.id
+    );
+    setMonthlyPrice(basePkg?.monthlyPrice ?? 0);
+  }, [selectedAgeCategory, basePackages]);
+
+  // Step 1 -> Step 2: Create child, then load age categories + packages
   async function handleChildSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
@@ -55,19 +76,19 @@ export default function OnboardingPage() {
       const child = await api.createChild(childName, birthDate);
       setCreatedChild(child);
 
-      // Load packages
-      const allPackages = await api.getPackages();
+      // Load age categories and packages for pricing
+      const [categories, allPackages] = await Promise.all([
+        api.getAgeCategories(),
+        api.getPackages(),
+      ]);
+      setAgeCategories(categories);
       const base = allPackages.filter((p) => p.type.toUpperCase() === 'BASE');
-      const addons = allPackages.filter((p) => p.type.toUpperCase() === 'ADDON');
       setBasePackages(base);
-      setAddonPackages(addons);
 
-      // Pre-select recommended package based on child's age category
+      // Pre-select recommended age category based on child
       if (child.ageCategory) {
-        const recommended = base.find(
-          (p) => p.ageCategory?.id === child.ageCategory?.id
-        );
-        if (recommended) setSelectedBasePackage(recommended);
+        const recommended = categories.find((c) => c.id === child.ageCategory?.id);
+        if (recommended) setSelectedAgeCategory(recommended);
       }
 
       setStep(1);
@@ -78,33 +99,32 @@ export default function OnboardingPage() {
     }
   }
 
-  // Step 2 → Step 3
-  function handleBaseSelect() {
-    if (!selectedBasePackage) {
-      setError('Vennligst velg en basispakke.');
+  // Toggle product selection
+  function toggleProduct(product: Product) {
+    setSelectedProducts((prev) =>
+      prev.find((p) => p.id === product.id)
+        ? prev.filter((p) => p.id !== product.id)
+        : [...prev, product]
+    );
+  }
+
+  // Step 2 -> Step 3
+  function handleProductsSelect() {
+    if (selectedProducts.length === 0) {
+      setError('Du må velge minst ett produkt.');
+      return;
+    }
+    if (!selectedAgeCategory) {
+      setError('Du må velge en alderskategori.');
       return;
     }
     setError('');
     setStep(2);
   }
 
-  // Step 3 → Step 4
-  function handleAddonSelect() {
-    setStep(3);
-  }
-
-  // Toggle addon
-  function toggleAddon(pkg: Package) {
-    setSelectedAddons((prev) =>
-      prev.find((p) => p.id === pkg.id)
-        ? prev.filter((p) => p.id !== pkg.id)
-        : [...prev, pkg]
-    );
-  }
-
-  // Step 4: Confirm and create subscriptions
+  // Step 3: Confirm and create subscription
   async function handleConfirm() {
-    if (!createdChild || !selectedBasePackage) return;
+    if (!createdChild || !selectedAgeCategory || selectedProducts.length === 0) return;
     setError('');
     setLoading(true);
 
@@ -121,10 +141,8 @@ export default function OnboardingPage() {
         return;
       }
 
-      await api.createSubscription(createdChild.id, selectedBasePackage.id);
-      for (const addon of selectedAddons) {
-        await api.createSubscription(createdChild.id, addon.id);
-      }
+      const productIds = selectedProducts.map((p) => p.id);
+      await api.createSubscription(createdChild.id, selectedAgeCategory.id, productIds);
       router.push('/dashboard');
     } catch {
       setError('Noe gikk galt. Sjekk at du har lagt til leveringsadresse og prøv igjen.');
@@ -141,12 +159,8 @@ export default function OnboardingPage() {
     );
   }
 
-  const totalPrice =
-    (selectedBasePackage?.monthlyPrice || 0) +
-    selectedAddons.reduce((sum, p) => sum + p.monthlyPrice, 0);
-
   return (
-    <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
       {/* Progress steps */}
       <div className="mb-10">
         <div className="flex items-center justify-between">
@@ -186,7 +200,7 @@ export default function OnboardingPage() {
         <div className="rounded-2xl bg-white p-8 shadow-sm">
           <h1 className="text-2xl font-bold text-baby-text">Legg til barnet ditt</h1>
           <p className="mt-2 text-sm text-baby-text-light">
-            Vi bruker fødselsdatoen til å finne riktig utstyrspakke.
+            Vi bruker fødselsdatoen til å foreslå riktige produkter for barnets alder.
           </p>
 
           <form onSubmit={handleChildSubmit} className="mt-6 space-y-4">
@@ -230,51 +244,112 @@ export default function OnboardingPage() {
         </div>
       )}
 
-      {/* Step 2: Select base package */}
+      {/* Step 2: Select products */}
       {step === 1 && (
         <div className="rounded-2xl bg-white p-8 shadow-sm">
-          <h1 className="text-2xl font-bold text-baby-text">Velg basispakke</h1>
-          {createdChild?.ageCategory && (
-            <p className="mt-2 text-sm text-baby-text-light">
-              Basert på {createdChild.name}s alder anbefaler vi pakken for fasen{' '}
-              <strong>{createdChild.ageCategory.label}</strong> ({createdChild.ageCategory.minMonths}–{createdChild.ageCategory.maxMonths} mnd).
-            </p>
+          <h1 className="text-2xl font-bold text-baby-text">Velg dine produkter</h1>
+          <p className="mt-2 text-sm text-baby-text-light">
+            Velg alderskategori og plukk de produktene du vil ha. Fast månedspris uansett antall.
+          </p>
+
+          {/* Age category selector */}
+          <div className="mt-6">
+            <label className="block text-sm font-medium text-baby-text mb-2">Alderskategori</label>
+            <div className="flex flex-wrap gap-2">
+              {ageCategories.map((cat) => {
+                const isSelected = selectedAgeCategory?.id === cat.id;
+                const isRecommended = cat.id === createdChild?.ageCategory?.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedAgeCategory(cat)}
+                    className={`relative rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                      isSelected
+                        ? 'bg-baby-blue text-white'
+                        : 'bg-baby-cream text-baby-text hover:bg-baby-warm'
+                    }`}
+                  >
+                    {isRecommended && (
+                      <span className="absolute -top-2 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-baby-sage text-[8px] text-white font-bold">
+                        ★
+                      </span>
+                    )}
+                    {cat.label}
+                  </button>
+                );
+              })}
+            </div>
+            {createdChild?.ageCategory && (
+              <p className="mt-2 text-xs text-baby-text-light">
+                ★ Anbefalt for {createdChild.name} basert på alder
+              </p>
+            )}
+          </div>
+
+          {/* Price display */}
+          {selectedAgeCategory && monthlyPrice > 0 && (
+            <div className="mt-4 rounded-xl bg-baby-blue/5 border border-baby-blue-light p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-baby-text">
+                    {selectedAgeCategory.label}
+                  </p>
+                  <p className="text-xs text-baby-text-light">
+                    {selectedAgeCategory.minMonths}–{selectedAgeCategory.maxMonths} mnd
+                  </p>
+                </div>
+                <p className="text-2xl font-bold text-baby-blue">
+                  {monthlyPrice} <span className="text-sm font-normal text-baby-text-light">kr/mnd</span>
+                </p>
+              </div>
+            </div>
           )}
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            {basePackages.map((pkg) => {
-              const isSelected = selectedBasePackage?.id === pkg.id;
-              const isRecommended = pkg.ageCategory?.id === createdChild?.ageCategory?.id;
-              return (
-                <button
-                  key={pkg.id}
-                  type="button"
-                  onClick={() => setSelectedBasePackage(pkg)}
-                  className={`relative rounded-xl border-2 p-5 text-left transition-all ${
-                    isSelected
-                      ? 'border-baby-blue bg-baby-blue/5'
-                      : 'border-gray-200 hover:border-baby-blue-light'
-                  }`}
-                >
-                  {isRecommended && (
-                    <span className="absolute -top-2.5 left-4 rounded-full bg-baby-sage px-2 py-0.5 text-xs font-medium text-white">
-                      Anbefalt
-                    </span>
-                  )}
-                  {pkg.ageCategory && (
-                    <span className="text-xs font-medium text-baby-text-light">
-                      {pkg.ageCategory.label} ({pkg.ageCategory.minMonths}–{pkg.ageCategory.maxMonths} mnd)
-                    </span>
-                  )}
-                  <h3 className="mt-1 text-lg font-semibold text-baby-text">{pkg.name}</h3>
-                  <p className="mt-1 text-sm text-baby-text-light line-clamp-2">{pkg.description}</p>
-                  <p className="mt-3 text-xl font-bold text-baby-blue">
-                    {pkg.monthlyPrice} <span className="text-sm font-normal text-baby-text-light">kr/mnd</span>
-                  </p>
-                </button>
-              );
-            })}
-          </div>
+          {/* Products grid */}
+          {loadingProducts ? (
+            <div className="mt-6 text-center text-baby-text-light">Henter produkter...</div>
+          ) : selectedAgeCategory && availableProducts.length > 0 ? (
+            <div className="mt-6">
+              <p className="text-sm font-medium text-baby-text mb-3">
+                Velg produkter ({selectedProducts.length} valgt)
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {availableProducts.map((product) => {
+                  const isSelected = selectedProducts.some((p) => p.id === product.id);
+                  return (
+                    <button
+                      key={product.id}
+                      type="button"
+                      onClick={() => toggleProduct(product)}
+                      className={`flex items-start gap-3 rounded-xl border-2 p-3 text-left transition-all ${
+                        isSelected
+                          ? 'border-baby-blue bg-baby-blue/5'
+                          : 'border-gray-200 hover:border-baby-blue-light'
+                      }`}
+                    >
+                      {/* Checkbox */}
+                      <div className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 ${
+                        isSelected ? 'border-baby-blue bg-baby-blue' : 'border-gray-300'
+                      }`}>
+                        {isSelected && (
+                          <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                          </svg>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-baby-text text-sm">{product.name}</p>
+                        <p className="mt-0.5 text-xs text-baby-text-light line-clamp-2">{product.description}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : selectedAgeCategory ? (
+            <p className="mt-6 text-baby-text-light">Ingen produkter tilgjengelige for denne fasen.</p>
+          ) : null}
 
           <div className="mt-6 flex gap-3">
             <button
@@ -284,71 +359,18 @@ export default function OnboardingPage() {
               Tilbake
             </button>
             <button
-              onClick={handleBaseSelect}
-              className="flex-1 rounded-full bg-baby-blue py-2.5 text-sm font-semibold text-white transition-colors hover:bg-baby-blue-dark"
+              onClick={handleProductsSelect}
+              disabled={selectedProducts.length === 0}
+              className="flex-1 rounded-full bg-baby-blue py-2.5 text-sm font-semibold text-white transition-colors hover:bg-baby-blue-dark disabled:opacity-50"
             >
-              Neste
+              Neste ({selectedProducts.length} valgt)
             </button>
           </div>
         </div>
       )}
 
-      {/* Step 3: Select addon packages */}
+      {/* Step 3: Confirmation */}
       {step === 2 && (
-        <div className="rounded-2xl bg-white p-8 shadow-sm">
-          <h1 className="text-2xl font-bold text-baby-text">Tilleggspakker</h1>
-          <p className="mt-2 text-sm text-baby-text-light">
-            Velg eventuelle tilleggspakker for ekstra behov. Du kan hoppe over dette steget.
-          </p>
-
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            {addonPackages.map((pkg) => {
-              const isSelected = selectedAddons.some((p) => p.id === pkg.id);
-              return (
-                <button
-                  key={pkg.id}
-                  type="button"
-                  onClick={() => toggleAddon(pkg)}
-                  className={`rounded-xl border-2 p-5 text-left transition-all ${
-                    isSelected
-                      ? 'border-baby-sage bg-baby-sage-light/20'
-                      : 'border-gray-200 hover:border-baby-sage-light'
-                  }`}
-                >
-                  {pkg.challengeTag && (
-                    <span className="inline-block rounded-full bg-baby-sage-light/50 px-2 py-0.5 text-xs font-medium text-baby-sage">
-                      {pkg.challengeTag}
-                    </span>
-                  )}
-                  <h3 className="mt-1 text-lg font-semibold text-baby-text">{pkg.name}</h3>
-                  <p className="mt-1 text-sm text-baby-text-light line-clamp-2">{pkg.description}</p>
-                  <p className="mt-3 text-xl font-bold text-baby-blue">
-                    {pkg.monthlyPrice} <span className="text-sm font-normal text-baby-text-light">kr/mnd</span>
-                  </p>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="mt-6 flex gap-3">
-            <button
-              onClick={() => setStep(1)}
-              className="flex-1 rounded-full border border-gray-300 py-2.5 text-sm font-medium text-baby-text transition-colors hover:bg-gray-50"
-            >
-              Tilbake
-            </button>
-            <button
-              onClick={handleAddonSelect}
-              className="flex-1 rounded-full bg-baby-blue py-2.5 text-sm font-semibold text-white transition-colors hover:bg-baby-blue-dark"
-            >
-              {selectedAddons.length > 0 ? 'Neste' : 'Hopp over'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 4: Confirmation */}
-      {step === 3 && (
         <div className="rounded-2xl bg-white p-8 shadow-sm">
           <h1 className="text-2xl font-bold text-baby-text">Bekreft bestilling</h1>
           <p className="mt-2 text-sm text-baby-text-light">
@@ -389,33 +411,40 @@ export default function OnboardingPage() {
               )}
             </div>
 
-            {/* Base package */}
-            {selectedBasePackage && (
+            {/* Age category */}
+            {selectedAgeCategory && (
               <div className="rounded-xl border border-baby-blue-light bg-baby-blue/5 p-4">
-                <p className="text-sm font-medium text-baby-text-light">Basispakke</p>
-                <p className="text-lg font-semibold text-baby-text">{selectedBasePackage.name}</p>
-                <p className="text-sm font-bold text-baby-blue">{selectedBasePackage.monthlyPrice} kr/mnd</p>
+                <p className="text-sm font-medium text-baby-text-light">Alderskategori</p>
+                <p className="text-lg font-semibold text-baby-text">{selectedAgeCategory.label}</p>
+                <p className="text-sm text-baby-text-light">
+                  {selectedAgeCategory.minMonths}–{selectedAgeCategory.maxMonths} mnd
+                </p>
               </div>
             )}
 
-            {/* Addons */}
-            {selectedAddons.length > 0 && (
+            {/* Selected products */}
+            <div>
+              <p className="text-sm font-medium text-baby-text-light mb-2">Valgte produkter ({selectedProducts.length})</p>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-baby-text-light">Tilleggspakker</p>
-                {selectedAddons.map((addon) => (
-                  <div key={addon.id} className="rounded-xl border border-baby-sage-light bg-baby-sage-light/10 p-4">
-                    <p className="font-semibold text-baby-text">{addon.name}</p>
-                    <p className="text-sm font-bold text-baby-blue">{addon.monthlyPrice} kr/mnd</p>
+                {selectedProducts.map((product) => (
+                  <div key={product.id} className="flex items-center gap-3 rounded-xl border border-gray-200 p-3">
+                    <svg className="h-5 w-5 shrink-0 text-baby-sage" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                    </svg>
+                    <div>
+                      <p className="font-medium text-baby-text text-sm">{product.name}</p>
+                      <p className="text-xs text-baby-text-light">{product.description}</p>
+                    </div>
                   </div>
                 ))}
               </div>
-            )}
+            </div>
 
             {/* Total */}
             <div className="rounded-xl bg-baby-warm p-4">
               <div className="flex items-center justify-between">
                 <span className="text-lg font-semibold text-baby-text">Totalt per måned</span>
-                <span className="text-2xl font-bold text-baby-blue">{totalPrice} kr</span>
+                <span className="text-2xl font-bold text-baby-blue">{monthlyPrice} kr</span>
               </div>
               <p className="mt-1 text-xs text-baby-text-light">Ingen bindingstid. Kanseller når som helst.</p>
             </div>
@@ -423,7 +452,7 @@ export default function OnboardingPage() {
 
           <div className="mt-6 flex gap-3">
             <button
-              onClick={() => setStep(2)}
+              onClick={() => setStep(1)}
               className="flex-1 rounded-full border border-gray-300 py-2.5 text-sm font-medium text-baby-text transition-colors hover:bg-gray-50"
             >
               Tilbake
