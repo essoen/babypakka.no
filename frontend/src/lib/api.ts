@@ -174,8 +174,8 @@ export async function getSubscription(id: number): Promise<Subscription> {
   return fetchAuthApi<Subscription>(`/api/subscriptions/${id}`);
 }
 
-export async function createSubscription(childId: number, packageId: number): Promise<Subscription> {
-  return postApi<Subscription>('/api/subscriptions', { childId, packageId });
+export async function createSubscription(childId: number, ageCategoryId: number, productIds: number[]): Promise<Subscription> {
+  return postApi<Subscription>('/api/subscriptions', { childId, ageCategoryId, productIds });
 }
 
 export async function cancelSubscription(id: number): Promise<Subscription> {

@@ -345,11 +345,11 @@ export default function DashboardPage() {
                           {child.name} er nå i fasen {child.ageCategory.label}
                         </p>
                         <p className="text-sm text-baby-text-light">
-                          Nåværende pakke: {baseSub.packageName}. Vil du bytte til en pakke tilpasset ny fase?
+                          Nåværende pakke: {baseSub.packageName}. Vil du velge produkter tilpasset ny fase?
                         </p>
                       </div>
                       <Link href="/pakker" className="shrink-0 rounded-full bg-baby-blue px-4 py-1.5 text-sm font-semibold text-white hover:bg-baby-blue-dark">
-                        Se pakker
+                        Velg nye produkter
                       </Link>
                     </div>
                   </div>
@@ -359,18 +359,28 @@ export default function DashboardPage() {
                   <div className="mt-4 space-y-3">
                     {childSubs.map((sub) => (
                       <Link key={sub.id} href={`/abonnement/${sub.id}`}
-                        className="flex items-center justify-between rounded-xl bg-baby-cream p-4 transition-colors hover:bg-baby-warm">
-                        <div>
-                          <p className="font-semibold text-baby-text">{sub.packageName}</p>
-                          <p className="text-xs text-baby-text-light">
-                            {sub.packageType === 'base' ? 'Basispakke' : 'Tilleggspakke'} &middot; Startet{' '}
-                            {new Date(sub.startedAt).toLocaleDateString('nb-NO')}
-                          </p>
+                        className="block rounded-xl bg-baby-cream p-4 transition-colors hover:bg-baby-warm">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-semibold text-baby-text">{sub.packageName}</p>
+                            <p className="text-xs text-baby-text-light">
+                              Startet {new Date(sub.startedAt).toLocaleDateString('nb-NO')}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-baby-blue">{sub.monthlyPrice} kr/mnd</p>
+                            <span className="inline-block rounded-full bg-baby-sage-light px-2 py-0.5 text-xs font-medium text-baby-sage">Aktiv</span>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold text-baby-blue">{sub.monthlyPrice} kr/mnd</p>
-                          <span className="inline-block rounded-full bg-baby-sage-light px-2 py-0.5 text-xs font-medium text-baby-sage">Aktiv</span>
-                        </div>
+                        {sub.products && sub.products.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {sub.products.map((p, i) => (
+                              <span key={i} className="inline-block rounded-full bg-white px-2 py-0.5 text-xs text-baby-text-light">
+                                {p}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </Link>
                     ))}
                   </div>

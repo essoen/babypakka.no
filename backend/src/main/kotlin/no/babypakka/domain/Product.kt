@@ -22,5 +22,13 @@ class Product(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var condition: ProductCondition = ProductCondition.NEW
+    var condition: ProductCondition = ProductCondition.NEW,
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "product_age_categories",
+        joinColumns = [JoinColumn(name = "product_id")],
+        inverseJoinColumns = [JoinColumn(name = "age_category_id")]
+    )
+    var ageCategories: MutableList<AgeCategory> = mutableListOf()
 )

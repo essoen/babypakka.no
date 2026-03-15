@@ -28,10 +28,10 @@ open class ProductService(
     @Transactional
     open fun listByAgeCategoryId(ageCategoryId: Long): List<ProductResponse> {
         logger.debug { "Listing products for ageCategoryId=$ageCategoryId" }
-        val packages = babyPackageRepository.findByAgeCategoryId(ageCategoryId)
-        val productIds = packages.flatMap { it.products }.map { it.id }.toSet()
         return productRepository.findAll()
-            .filter { it.id in productIds }
+            .filter { product ->
+                product.ageCategories.any { it.id == ageCategoryId }
+            }
             .map { ProductResponse.from(it) }
     }
 

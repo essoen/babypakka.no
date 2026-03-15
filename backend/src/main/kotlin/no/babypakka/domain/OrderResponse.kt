@@ -21,7 +21,7 @@ data class OrderResponse(
         fun from(order: Order) = OrderResponse(
             id = order.id!!,
             childName = order.child!!.name,
-            packageName = order.subscription!!.babyPackage!!.name,
+            packageName = order.subscription!!.babyPackage?.name ?: "Egendefinert pakke",
             status = order.status.name,
             trackingNumber = order.trackingNumber,
             note = order.note,

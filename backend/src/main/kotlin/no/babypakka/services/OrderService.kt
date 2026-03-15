@@ -34,10 +34,9 @@ open class OrderService(
 
         val savedOrder = orderRepository.save(order)
 
-        // Add products from the package
-        val pkg = subscription.babyPackage!!
-        pkg.products.size // force lazy init
-        for (product in pkg.products) {
+        // Add products from the subscription's selected products
+        subscription.selectedProducts.size // force lazy init
+        for (product in subscription.selectedProducts) {
             val item = OrderItem().apply {
                 this.order = savedOrder
                 this.product = product
@@ -53,7 +52,7 @@ open class OrderService(
         logger.debug { "Finding orders for userId=$userId" }
         return orderRepository.findByUserId(userId).map { order ->
             order.child!!.name
-            order.subscription!!.babyPackage!!.name
+            order.subscription!!.babyPackage?.name
             order.items.size
             order.items.forEach { it.product!!.name }
             OrderResponse.from(order)
@@ -71,7 +70,7 @@ open class OrderService(
         return orders.map { order ->
             order.user!!.name
             order.child!!.name
-            order.subscription!!.babyPackage!!.name
+            order.subscription!!.babyPackage?.name
             order.items.size
             order.items.forEach { it.product!!.name }
             AdminOrderResponse.from(order)
