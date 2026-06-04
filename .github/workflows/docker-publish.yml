@@ -63,7 +63,9 @@ jobs:
     name: Deploy to EC2
     runs-on: ubuntu-latest
     needs: build-and-push
-    if: github.ref == 'refs/heads/main'
+    # AWS infra torn down 2026-06-03 to stop spend. EC2 host no longer exists.
+    # Re-enable by restoring: if: github.ref == 'refs/heads/main'
+    if: false
 
     permissions:
       packages: read
